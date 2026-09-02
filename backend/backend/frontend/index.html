@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrçaMóveis PWA</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f3f4f6; max-width: 500px; margin: auto; }
+    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h2 { color: #1f2937; margin-top: 0; }
+    label { display: block; margin-top: 12px; font-weight: bold; font-size: 14px; }
+    input { width: 100%; padding: 10px; margin-top: 4px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; }
+    button { width: 100%; padding: 12px; margin-top: 16px; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    .result { margin-top: 16px; padding: 12px; background: #e0f2fe; border-radius: 6px; display: none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Calculadora OrçaMóveis</h2>
+    <label>Nome do Cliente</label>
+    <input type="text" id="cliente" placeholder="Ex: João Silva">
+    
+    <label>Custo Base (R$)</label>
+    <input type="number" id="custo" placeholder="1000.00">
+    
+    <label>Markup (%)</label>
+    <input type="number" id="markup" placeholder="30">
+    
+    <button onclick="calcular()">Gerar Orçamento</button>
+    
+    <div id="resultado" class="result">
+      <p id="resValor" style="font-weight: bold; font-size: 18px; color: #1e40af; margin: 0;"></p>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'https://SEU-BACKEND.onrender.com';
+
+    async function calcular() {
+      const cliente = document.getElementById('cliente').value;
+      const custo = parseFloat(document.getElementById('custo').value);
+      const markup = parseFloat(document.getElementById('markup').value);
+
+      if(!cliente || !custo || !markup) {
+        alert('Preencha todos os campos!');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/api/orcamento`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cliente, custo, markup })
+        });
+        const data = await res.json();
+        document.getElementById('resValor').innerText = `Valor Final: R$ ${data.valorFinal.toFixed(2)}`;
+        document.getElementById('resultado').style.display = 'block';
+      } catch(e) {
+        const valorFinal = custo * (1 + markup / 100);
+        document.getElementById('resValor').innerText = `Valor Final: R$ ${valorFinal.toFixed(2)}`;
+        document.getElementById('resultado').style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>
