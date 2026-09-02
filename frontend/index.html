@@ -3,66 +3,322 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OrçaMóveis PWA</title>
+  <title>OrçaMóveis 3D - Modulador Pro</title>
   <link rel="manifest" href="manifest.json">
   <style>
-    body { font-family: sans-serif; padding: 20px; background: #f3f4f6; max-width: 500px; margin: auto; }
-    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    h2 { color: #1f2937; margin-top: 0; }
-    label { display: block; margin-top: 12px; font-weight: bold; font-size: 14px; }
-    input { width: 100%; padding: 10px; margin-top: 4px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; }
-    button { width: 100%; padding: 12px; margin-top: 16px; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-    .result { margin-top: 16px; padding: 12px; background: #e0f2fe; border-radius: 6px; display: none; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+    body { background: #111827; color: #f3f4f6; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    
+    /* Viewport 3D */
+    #canvas-container { width: 100%; height: 45vh; position: relative; background: #1f2937; }
+    #canvas-container canvas { width: 100%; height: 100%; display: block; }
+    .hint-3d { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.6); padding: 6px 12px; border-radius: 20px; font-size: 11px; color: #9ca3af; pointer-events: none; }
+
+    /* Painel de Controles */
+    .controls-panel { width: 100%; height: 55vh; background: #111827; padding: 15px; overflow-y: auto; border-top: 2px solid #374151; }
+    h2 { font-size: 18px; margin-bottom: 12px; color: #60a5fa; text-align: center; }
+    
+    .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .form-group { margin-bottom: 10px; }
+    .form-group.full { grid-column: span 2; }
+    
+    label { display: block; font-size: 12px; color: #9ca3af; margin-bottom: 4px; font-weight: bold; }
+    input, select { width: 100%; padding: 8px 10px; background: #1f2937; border: 1px solid #374151; border-radius: 6px; color: #fff; font-size: 14px; }
+    input:focus, select:focus { border-color: #3b82f6; outline: none; }
+    
+    .summary-card { background: #1f2937; border: 1px solid #3b82f6; border-radius: 8px; padding: 12px; margin-top: 10px; text-align: center; }
+    .price-tag { font-size: 22px; font-weight: bold; color: #10b981; margin-top: 4px; }
+    
+    button { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 15px; margin-top: 12px; cursor: pointer; transition: 0.2s; }
+    button:active { background: #1d4ed8; }
   </style>
+
+  <!-- Bibliotecas 3D (Three.js + OrbitControls) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
-  <div class="card">
-    <h2>Calculadora OrçaMóveis</h2>
-    <label>Nome do Cliente</label>
-    <input type="text" id="cliente" placeholder="Ex: João Silva">
-    
-    <label>Custo Base (R$)</label>
-    <input type="number" id="custo" placeholder="1000.00">
-    
-    <label>Markup (%)</label>
-    <input type="number" id="markup" placeholder="30">
-    
-    <button onclick="calcular()">Gerar Orçamento</button>
-    
-    <div id="resultado" class="result">
-      <p id="resValor" style="font-weight: bold; font-size: 18px; color: #1e40af; margin: 0;"></p>
+
+  <!-- Janela do Visualizador 3D -->
+  <div id="canvas-container">
+    <div class="hint-3d">🔄 Arraste para girar 360° | 🔍 Pinche para Zoom</div>
+  </div>
+
+  <!-- Controles do Módulo -->
+  <div class="controls-panel">
+    <h2>Configurador de Módulo 3D</h2>
+
+    <div class="form-group full">
+      <label>Nome do Cliente / Projeto</label>
+      <input type="text" id="cliente" placeholder="Ex: Armário de Cozinha - João">
     </div>
+
+    <div class="grid-inputs">
+      <div class="form-group">
+        <label>Largura (cm)</label>
+        <input type="number" id="largura" value="80" min="20" max="300" oninput="atualizarModelo3D()">
+      </div>
+      <div class="form-group">
+        <label>Altura (cm)</label>
+        <input type="number" id="altura" value="70" min="20" max="260" oninput="atualizarModelo3D()">
+      </div>
+      <div class="form-group">
+        <label>Profundidade (cm)</label>
+        <input type="number" id="profundidade" value="50" min="15" max="100" oninput="atualizarModelo3D()">
+      </div>
+      <div class="form-group">
+        <label>Acabamento / MDF</label>
+        <select id="corMDF" onchange="atualizarModelo3D()">
+          <option value="#d4a373">Amadeirado Claro</option>
+          <option value="#582f0e">Amadeirado Escuro</option>
+          <option value="#ffffff">Branco TX</option>
+          <option value="#374151">Grafito / Grafite</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Controles de Portas e Gavetas -->
+    <div class="grid-inputs">
+      <div class="form-group">
+        <label>Portas</label>
+        <select id="numPortas" onchange="atualizarModelo3D()">
+          <option value="0">Sem Portas</option>
+          <option value="1">1 Porta</option>
+          <option value="2" selected>2 Portas</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Gavetas</label>
+        <select id="numGavetas" onchange="atualizarModelo3D()">
+          <option value="0" selected>Sem Gavetas</option>
+          <option value="1">1 Gaveta</option>
+          <option value="2">2 Gavetas</option>
+          <option value="3">3 Gavetas</option>
+          <option value="4">4 Gavetas</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid-inputs">
+      <div class="form-group">
+        <label>Custo MDF/m² (R$)</label>
+        <input type="number" id="custoM2" value="120" oninput="calcularTotal()">
+      </div>
+      <div class="form-group">
+        <label>Markup / Lucro (%)</label>
+        <input type="number" id="markup" value="60" oninput="calcularTotal()">
+      </div>
+    </div>
+
+    <div class="summary-card">
+      <div style="font-size: 12px; color: #9ca3af;">Área Est. de Chapa: <span id="areaM2">0.00</span> m²</div>
+      <div class="price-tag" id="resValor">R$ 0,00</div>
+    </div>
+
+    <button onclick="salvarOrcamento()">Salvar Projeto no Banco</button>
   </div>
 
   <script>
     const API_URL = 'https://orcamoveis-backend.onrender.com';
 
+    let scene, camera, renderer, controls, moduloGroup;
 
-    async function calcular() {
+    function init3D() {
+      const container = document.getElementById('canvas-container');
+      
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x1f2937);
+
+      camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+      camera.position.set(140, 120, 220);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.setPixelRatio(window.devicePixelRatio);
+      container.appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+
+      // Luzes
+      scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      dirLight.position.set(100, 200, 100);
+      scene.add(dirLight);
+
+      // Chão (Grade)
+      const gridHelper = new THREE.GridHelper(400, 20, 0x4b5563, 0x374151);
+      gridHelper.position.y = -100;
+      scene.add(gridHelper);
+
+      // Grupo do Módulo
+      moduloGroup = new THREE.Group();
+      scene.add(moduloGroup);
+
+      window.addEventListener('resize', onWindowResize);
+      atualizarModelo3D();
+      animate();
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    function onWindowResize() {
+      const container = document.getElementById('canvas-container');
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    }
+
+    // Função auxiliar para criar peças com bordas destacadas
+    function criarPeca(width, height, depth, color, x, y, z) {
+      const group = new THREE.Group();
+      const geom = new THREE.BoxGeometry(width, height, depth);
+      const mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.5 });
+      const mesh = new THREE.Mesh(geom, mat);
+      group.add(mesh);
+
+      const edges = new THREE.EdgesGeometry(geom);
+      const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000 }));
+      group.add(line);
+
+      group.position.set(x, y, z);
+      return group;
+    }
+
+    // Renderiza o módulo 3D com a estrutura, portas e gavetas
+    function atualizarModelo3D() {
+      const w = parseFloat(document.getElementById('largura').value) || 80;
+      const h = parseFloat(document.getElementById('altura').value) || 70;
+      const d = parseFloat(document.getElementById('profundidade').value) || 50;
+      const corHex = document.getElementById('corMDF').value;
+      
+      const numPortas = parseInt(document.getElementById('numPortas').value);
+      const numGavetas = parseInt(document.getElementById('numGavetas').value);
+
+      // Limpa peças anteriores
+      while(moduloGroup.children.length > 0) { 
+        moduloGroup.remove(moduloGroup.children[0]); 
+      }
+
+      // 1. Corpo/Caixa do Móvel
+      const caixa = criarPeca(w, h, d, corHex, 0, 0, 0);
+      moduloGroup.add(caixa);
+
+      const espFrente = 1.8; // MDF 18mm
+      const zFrente = (d / 2) + (espFrente / 2) + 0.2;
+      const matPuxador = new THREE.MeshStandardMaterial({ color: 0xd1d5db, metalness: 0.8, roughness: 0.2 });
+
+      // 2. Se tiver Gavetas
+      if (numGavetas > 0) {
+        const numP = 0; // Desativa portas se tiver gavetas
+        document.getElementById('numPortas').value = "0";
+
+        const altGaveta = (h - (numGavetas * 0.5)) / numGavetas;
+        const yInicial = (h / 2) - (altGaveta / 2) - 0.25;
+
+        for (let i = 0; i < numGavetas; i++) {
+          const yPos = yInicial - i * (altGaveta + 0.5);
+          const gaveta = criarPeca(w - 0.4, altGaveta, espFrente, corHex, 0, yPos, zFrente);
+          
+          // Puxador da Gaveta
+          const puxGeom = new THREE.BoxGeometry(w * 0.35, 1.5, 2);
+          const puxador = new THREE.Mesh(puxGeom, matPuxador);
+          puxador.position.set(0, 0, espFrente / 2 + 1);
+          gaveta.add(puxador);
+
+          moduloGroup.add(gaveta);
+        }
+      } 
+      // 3. Se tiver Portas
+      else if (numPortas > 0) {
+        const altPorta = h - 0.4;
+        
+        if (numPortas === 1) {
+          const largPorta = w - 0.4;
+          const porta = criarPeca(largPorta, altPorta, espFrente, corHex, 0, 0, zFrente);
+
+          const puxGeom = new THREE.BoxGeometry(1.5, altPorta * 0.3, 2);
+          const puxador = new THREE.Mesh(puxGeom, matPuxador);
+          puxador.position.set((largPorta / 2) - 3, 0, espFrente / 2 + 1);
+          porta.add(puxador);
+
+          moduloGroup.add(porta);
+        } else if (numPortas === 2) {
+          const largPorta = (w - 0.8) / 2;
+          
+          // Porta Esquerda
+          const portaEsq = criarPeca(largPorta, altPorta, espFrente, corHex, -(largPorta / 2) - 0.2, 0, zFrente);
+          const puxEsq = new THREE.Mesh(new THREE.BoxGeometry(1.5, altPorta * 0.3, 2), matPuxador);
+          puxEsq.position.set((largPorta / 2) - 2, 0, espFrente / 2 + 1);
+          portaEsq.add(puxEsq);
+          moduloGroup.add(portaEsq);
+
+          // Porta Direita
+          const portaDir = criarPeca(largPorta, altPorta, espFrente, corHex, (largPorta / 2) + 0.2, 0, zFrente);
+          const puxDir = new THREE.Mesh(new THREE.BoxGeometry(1.5, altPorta * 0.3, 2), matPuxador);
+          puxDir.position.set(-(largPorta / 2) + 2, 0, espFrente / 2 + 1);
+          portaDir.add(puxDir);
+          moduloGroup.add(portaDir);
+        }
+      }
+
+      // Centraliza módulo no chão
+      moduloGroup.position.y = (h / 2) - 100;
+
+      calcularTotal();
+    }
+
+    // Cálculo do consumo de material e valor final
+    function calcularTotal() {
+      const w = (parseFloat(document.getElementById('largura').value) || 0) / 100;
+      const h = (parseFloat(document.getElementById('altura').value) || 0) / 100;
+      const d = (parseFloat(document.getElementById('profundidade').value) || 0) / 100;
+      
+      const custoM2 = parseFloat(document.getElementById('custoM2').value) || 0;
+      const markup = parseFloat(document.getElementById('markup').value) || 0;
+
+      // Estimativa de consumo em m² (Caixaria + Frentes + Corrediças/Dobradiças)
+      const areaTotal = (2 * (h * d)) + (2 * (w * d)) + (w * h) * 1.3;
+      const custoMaterial = areaTotal * custoM2;
+      const valorFinal = custoMaterial * (1 + (markup / 100));
+
+      document.getElementById('areaM2').innerText = areaTotal.toFixed(2);
+      document.getElementById('resValor').innerText = `R$ ${valorFinal.toFixed(2)}`;
+
+      return { custoMaterial, markup, valorFinal };
+    }
+
+    async function salvarOrcamento() {
       const cliente = document.getElementById('cliente').value;
-      const custo = parseFloat(document.getElementById('custo').value);
-      const markup = parseFloat(document.getElementById('markup').value);
-
-      if(!cliente || !custo || !markup) {
-        alert('Preencha todos os campos!');
+      if (!cliente) {
+        alert('Por favor, informe o nome do cliente!');
         return;
       }
+
+      const { custoMaterial, markup, valorFinal } = calcularTotal();
 
       try {
         const res = await fetch(`${API_URL}/api/orcamento`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cliente, custo, markup })
+          body: JSON.stringify({ cliente, custo: custoMaterial, markup })
         });
-        const data = await res.json();
-        document.getElementById('resValor').innerText = `Valor Final: R$ ${data.valorFinal.toFixed(2)}`;
-        document.getElementById('resultado').style.display = 'block';
-      } catch(e) {
-        const valorFinal = custo * (1 + markup / 100);
-        document.getElementById('resValor').innerText = `Valor Final: R$ ${valorFinal.toFixed(2)}`;
-        document.getElementById('resultado').style.display = 'block';
+        
+        if (res.ok) {
+          alert('Projeto 3D e orçamento salvos com sucesso!');
+        } else {
+          alert('Erro ao salvar no servidor.');
+        }
+      } catch (e) {
+        alert(`Orçamento calculado: R$ ${valorFinal.toFixed(2)} (Modo Offline)`);
       }
     }
+
+    window.onload = init3D;
   </script>
 </body>
 </html>
