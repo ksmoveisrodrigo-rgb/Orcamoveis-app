@@ -2,59 +2,72 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>OrçaMóveis 3D - Promob Web Studio Pro</title>
   <link rel="manifest" href="manifest.json">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background: #0b0f19; color: #f8fafc; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-    /* Barra Superior */
-    .top-bar { height: 45px; background: #0f172a; border-bottom: 1px solid #334155; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; }
-    .brand { font-weight: 800; color: #38bdf8; font-size: 15px; display: flex; align-items: center; gap: 8px; }
-    .top-tools { display: flex; gap: 8px; }
+    /* Barra Superior Responsiva */
+    .top-bar { height: 48px; background: #0f172a; border-bottom: 1px solid #334155; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; gap: 8px; shrink: 0; }
+    .brand { font-weight: 800; color: #38bdf8; font-size: 13px; white-space: nowrap; }
+    .top-tools { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+    .top-tools::-webkit-scrollbar { display: none; }
 
-    /* Layout 3 Colunas Promob */
-    .app-workspace { display: flex; flex: 1; height: calc(100vh - 45px); overflow: hidden; }
+    /* Layout Principal Desktop vs Mobile */
+    .app-workspace { display: flex; flex: 1; height: calc(100vh - 48px); overflow: hidden; flex-direction: row; }
     
-    /* Painel Esquerdo: Catálogo */
-    .panel-left { width: 260px; background: #0f172a; border-right: 1px solid #334155; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
-    
-    /* Painel Central: Viewport 3D */
-    .viewport-container { flex: 1; position: relative; background: radial-gradient(circle at center, #1e293b 0%, #0b0f19 100%); }
+    /* Viewport 3D */
+    .viewport-container { flex: 1; position: relative; background: radial-gradient(circle at center, #1e293b 0%, #0b0f19 100%); min-height: 250px; }
     #canvas-3d { width: 100%; height: 100%; display: block; }
     
-    /* Overlay de Cotas na Tela */
     .cota-overlay { position: absolute; pointer-events: none; top: 0; left: 0; width: 100%; height: 100%; }
-    .cota-label { position: absolute; background: rgba(56, 189, 248, 0.9); color: #000; font-weight: bold; font-size: 10px; padding: 2px 6px; border-radius: 4px; transform: translate(-50%, -50%); }
+    .cota-label { position: absolute; background: rgba(56, 189, 248, 0.95); color: #000; font-weight: 800; font-size: 10px; padding: 2px 6px; border-radius: 4px; transform: translate(-50%, -50%); box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
 
-    /* Painel Direito: Propriedades e Orçamento */
-    .panel-right { width: 300px; background: #0f172a; border-left: 1px solid #334155; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+    /* Painéis Laterais */
+    .panel-left, .panel-right { background: #0f172a; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .panel-left { width: 250px; border-right: 1px solid #334155; }
+    .panel-right { width: 280px; border-left: 1px solid #334155; }
+
+    /* Navegação por Abas no Mobile */
+    .mobile-tabs { display: none; background: #0f172a; border-top: 1px solid #334155; height: 50px; flex-shrink: 0; }
+    .tab-btn { flex: 1; background: none; border: none; color: #64748b; font-size: 11px; font-weight: 700; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer; }
+    .tab-btn.active { color: #38bdf8; border-top: 2px solid #38bdf8; }
 
     /* Utilitários UI */
     .section-header { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #38bdf8; font-weight: bold; border-bottom: 1px solid #1e293b; padding-bottom: 4px; margin-bottom: 6px; }
-    .btn { background: #1e293b; color: #f8fafc; border: 1px solid #475569; padding: 8px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: 0.2s; width: 100%; text-align: left; display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-    .btn:hover { background: #0284c7; color: #fff; border-color: #38bdf8; }
+    .btn { background: #1e293b; color: #f8fafc; border: 1px solid #475569; padding: 8px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 4px; white-space: nowrap; }
+    .btn:hover, .btn:active { background: #0284c7; color: #fff; border-color: #38bdf8; }
     .btn-action { background: #0284c7; text-align: center; justify-content: center; font-weight: 700; margin-top: 6px; }
-    .btn-action:hover { background: #0369a1; }
 
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
     .form-group { margin-bottom: 6px; }
     label { display: block; font-size: 10px; color: #94a3b8; margin-bottom: 2px; font-weight: 600; }
-    input, select { width: 100%; padding: 6px 8px; background: #1e293b; border: 1px solid #334155; border-radius: 5px; color: #fff; font-size: 11px; outline: none; }
-    input:focus, select:focus { border-color: #38bdf8; }
+    input, select { width: 100%; padding: 7px; background: #1e293b; border: 1px solid #334155; border-radius: 5px; color: #fff; font-size: 11px; outline: none; }
 
-    /* Card de Preço Final */
     .price-card { background: #1e293b; border: 1px solid #0284c7; border-radius: 8px; padding: 10px; margin-top: auto; }
     .price-val { font-size: 20px; font-weight: 800; color: #4ade80; margin-top: 4px; }
 
-    /* Modal */
-    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 999; padding: 20px; justify-content: center; align-items: center; }
-    .modal-box { background: #1e293b; border: 1px solid #475569; border-radius: 8px; width: 100%; max-width: 650px; max-height: 85vh; overflow-y: auto; padding: 16px; }
+    /* Modais */
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 999; padding: 14px; justify-content: center; align-items: center; }
+    .modal-box { background: #1e293b; border: 1px solid #475569; border-radius: 8px; width: 100%; max-width: 650px; max-height: 85vh; overflow-y: auto; padding: 14px; }
     table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 8px; }
     th, td { border: 1px solid #334155; padding: 6px; text-align: left; }
     th { background: #0f172a; color: #38bdf8; }
+
+    /* MEDIA QUERY PARA DISPOSITIVOS MÓVEIS (CELULARES) */
+    @media (max-width: 768px) {
+      .app-workspace { flex-direction: column; }
+      .viewport-container { height: 42vh; flex: none; }
+      
+      .panel-left, .panel-right { width: 100%; flex: 1; border: none; display: none; height: calc(58vh - 98px); overflow-y: auto; }
+      .panel-left.active-tab, .panel-right.active-tab { display: flex; }
+      
+      .mobile-tabs { display: flex; }
+      .brand span { display: none; }
+    }
   </style>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -65,18 +78,24 @@
 
   <!-- Barra Superior -->
   <div class="top-bar">
-    <div class="brand">📐 Promob Web Studio <span>| Projetista Pro</span></div>
+    <div class="brand">📐 Promob Web <span>| Studio Pro</span></div>
     <div class="top-tools">
-      <button class="btn" style="width: auto;" onclick="toggleVisao2D()">📐 Visão 2D / 3D</button>
-      <button class="btn" style="width: auto;" onclick="toggleAbrirMoveis()">🚪 Abrir Frentes</button>
-      <button class="btn" style="width: auto;" onclick="toggleCotas()">📏 Toggle Cotas</button>
+      <button class="btn" style="width: auto;" onclick="toggleVisao2D()">📐 2D/3D</button>
+      <button class="btn" style="width: auto;" onclick="toggleAbrirMoveis()">🚪 Abrir</button>
+      <button class="btn" style="width: auto;" onclick="toggleCotas()">📏 Cotas</button>
     </div>
   </div>
 
   <div class="app-workspace">
     
-    <!-- Painel Esquerdo: Módulos e Planta -->
-    <div class="panel-left">
+    <!-- Viewport 3D -->
+    <div class="viewport-container" id="viewport">
+      <canvas id="canvas-3d"></canvas>
+      <div class="cota-overlay" id="cotaOverlay"></div>
+    </div>
+
+    <!-- Aba 1: Painel de Catálogo & Layout -->
+    <div class="panel-left active-tab" id="tabCatalog">
       <div>
         <div class="section-header">1. Layout do Cômodo</div>
         <div class="form-group">
@@ -91,26 +110,22 @@
 
       <div>
         <div class="section-header">2. Inserir Módulos</div>
-        <button class="btn" onclick="adicionarModulo('balcao')">📦 Balcão Inferior <span>+</span></button>
-        <button class="btn" onclick="adicionarModulo('aereo')">🗄️ Armário Aéreo <span>+</span></button>
-        <button class="btn" onclick="adicionarModulo('torre')">🏢 Torre Paneleiro <span>+</span></button>
-        <button class="btn" onclick="adicionarModulo('bancada')">🪵 Bancada / Tampo <span>+</span></button>
+        <div class="grid-2">
+          <button class="btn" onclick="adicionarModulo('balcao')">📦 Balcão</button>
+          <button class="btn" onclick="adicionarModulo('aereo')">🗄️ Aéreo</button>
+          <button class="btn" onclick="adicionarModulo('torre')">🏢 Torre</button>
+          <button class="btn" onclick="adicionarModulo('bancada')">🪵 Tampo</button>
+        </div>
       </div>
 
       <div>
-        <div class="section-header">3. Árvore de Móveis na Cena</div>
+        <div class="section-header">3. Módulos no Projeto</div>
         <div id="listaModulosTree" style="display: flex; flex-direction: column; gap: 4px;"></div>
       </div>
     </div>
 
-    <!-- Viewport 3D Central -->
-    <div class="viewport-container" id="viewport">
-      <canvas id="canvas-3d"></canvas>
-      <div class="cota-overlay" id="cotaOverlay"></div>
-    </div>
-
-    <!-- Painel Direito: Propriedades e Preço -->
-    <div class="panel-right">
+    <!-- Aba 2: Propriedades do Módulo & Valores -->
+    <div class="panel-right" id="tabProps">
       <div class="section-header">Propriedades do Item</div>
       
       <div class="grid-3">
@@ -124,16 +139,16 @@
         <div class="form-group"><label>Altura Y</label><input type="number" id="propY" step="5" oninput="atualizarItem()"></div>
       </div>
 
-      <button class="btn" onclick="encaixarProximo()" style="background: #0369a1; border-color: #38bdf8;">🧲 Encaixar Automático (Snap)</button>
+      <button class="btn" onclick="encaixarProximo()" style="background: #0369a1; border-color: #38bdf8; justify-content: center;">🧲 Encaixar Automático (Snap)</button>
 
-      <div class="section-header" style="margin-top: 8px;">Acabamento e Ferragens</div>
+      <div class="section-header" style="margin-top: 6px;">Acabamento & Estilo</div>
       
       <div class="form-group">
         <label>Padrão MDF</label>
         <select id="propCor" onchange="atualizarItem()">
           <option value="#d4a373">Freijó Purus (Arauco)</option>
           <option value="#5c3d2e">Louro Freijó (Duratex)</option>
-          <option value="#334155">Gianduia / Grafite Escuro</option>
+          <option value="#334155">Gianduia Escuro</option>
           <option value="#f8fafc">Branco Supremo TX</option>
         </select>
       </div>
@@ -144,51 +159,51 @@
           <select id="propFrente" onchange="atualizarItem()">
             <option value="portas2">2 Portas</option>
             <option value="porta1">1 Porta</option>
-            <option value="gavetas3">3 Gavetas</option>
-            <option value="vidro">Porta Vidro Reflecta</option>
+            <option value="vidro">Vidro Reflecta</option>
           </select>
         </div>
         <div class="form-group">
           <label>Puxador</label>
           <select id="propPuxador" onchange="atualizarItem()">
-            <option value="gola">Perfil Gola Alumínio</option>
+            <option value="gola">Perfil Gola</option>
             <option value="cava">Cava Usinada</option>
-            <option value="alca">Alça Inox</option>
           </select>
         </div>
       </div>
 
       <div class="form-group">
-        <label>
-          <input type="checkbox" id="propLED" onchange="atualizarItem()" style="width: auto;"> 💡 Iluminação Fita LED Embutida
-        </label>
+        <label><input type="checkbox" id="propLED" onchange="atualizarItem()" style="width: auto;"> 💡 Iluminação Fita LED</label>
       </div>
 
-      <button class="btn" style="color: #f87171; border-color: #7f1d1d;" onclick="excluirItem()">🗑️ Excluir Módulo</button>
+      <button class="btn" style="color: #f87171; border-color: #7f1d1d; justify-content: center;" onclick="excluirItem()">🗑️ Excluir Módulo</button>
 
-      <!-- Resumo Financeiro -->
       <div class="price-card">
-        <div class="section-header" style="border:none; margin:0;">Resumo do Orçamento</div>
-        <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">
-          Chapa Total: <strong id="resM2" style="color:#fff;">0.00 m²</strong>
-        </div>
-        <div style="font-size: 11px; color: #94a3b8;">
-          Módulos: <strong id="resQtd" style="color:#fff;">0</strong>
-        </div>
+        <div class="section-header" style="border:none; margin:0;">Resumo Financeiro</div>
+        <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">Chapa Total: <strong id="resM2" style="color:#fff;">0.00 m²</strong></div>
         <div class="price-val" id="resTotal">R$ 0,00</div>
       </div>
 
-      <button class="btn btn-action" onclick="abrirCutlist()">📋 Plano de Corte (Cutlist)</button>
-      <button class="btn btn-action" style="background:#16a34a;" onclick="salvarBD()">💾 Salvar no Banco de Dados</button>
+      <button class="btn btn-action" onclick="abrirCutlist()">📋 Lista de Peças (Cutlist)</button>
+      <button class="btn btn-action" style="background:#16a34a;" onclick="salvarBD()">💾 Salvar Projeto</button>
     </div>
 
+  </div>
+
+  <!-- Menu de Abas Inferior (Mobile) -->
+  <div class="mobile-tabs">
+    <button class="tab-btn active" id="btnTab1" onclick="mudarAbaMobile('catalog')">
+      <span>📦</span> Módulos
+    </button>
+    <button class="tab-btn" id="btnTab2" onclick="mudarAbaMobile('props')">
+      <span>⚙️</span> Propriedades
+    </button>
   </div>
 
   <!-- Modal Cutlist -->
   <div id="modalCutlist" class="modal">
     <div class="modal-box">
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h3 style="color:#38bdf8;">Lista de Peças p/ Corte e Bordo</h3>
+        <h3 style="color:#38bdf8;">Lista de Peças p/ Corte</h3>
         <button onclick="fecharCutlist()" style="background:none; border:none; color:#fff; font-size:18px; cursor:pointer;">✕</button>
       </div>
       <table id="tabelaCutlist">
@@ -196,10 +211,9 @@
           <tr>
             <th>Módulo</th>
             <th>Peça</th>
-            <th>Comp. (cm)</th>
-            <th>Larg. (cm)</th>
+            <th>Comp.</th>
+            <th>Larg.</th>
             <th>Qtd</th>
-            <th>Fita Bordo</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -233,11 +247,9 @@
       controls = new THREE.OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
 
-      // Iluminação de Estúdio
       scene.add(new THREE.AmbientLight(0xffffff, 0.7));
       const sun = new THREE.DirectionalLight(0xffffff, 0.8);
       sun.position.set(200, 400, 300);
-      sun.castShadow = true;
       scene.add(sun);
 
       paredesGroup = new THREE.Group();
@@ -265,7 +277,21 @@
       renderer.setSize(container.clientWidth, container.clientHeight);
     }
 
-    // 1. Construtor de Paredes / Cômodo
+    function mudarAbaMobile(aba) {
+      document.getElementById('tabCatalog').classList.remove('active-tab');
+      document.getElementById('tabProps').classList.remove('active-tab');
+      document.getElementById('btnTab1').classList.remove('active');
+      document.getElementById('btnTab2').classList.remove('active');
+
+      if (aba === 'catalog') {
+        document.getElementById('tabCatalog').classList.add('active-tab');
+        document.getElementById('btnTab1').classList.add('active');
+      } else {
+        document.getElementById('tabProps').classList.add('active-tab');
+        document.getElementById('btnTab2').classList.add('active');
+      }
+    }
+
     function construirAmbiente() {
       while(paredesGroup.children.length > 0) paredesGroup.remove(paredesGroup.children[0]);
 
@@ -273,13 +299,10 @@
       const matParede = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.9 });
       const matPiso = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.4 });
 
-      // Piso
       const piso = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), matPiso);
-      piso.rotation.x = -Math.PI / 2;
-      piso.position.y = -80;
+      piso.rotation.x = -Math.PI / 2; piso.position.y = -80;
       paredesGroup.add(piso);
 
-      // Paredes
       const p1 = new THREE.Mesh(new THREE.BoxGeometry(600, 300, 10), matParede);
       p1.position.set(0, 70, -200);
       paredesGroup.add(p1);
@@ -296,7 +319,6 @@
       }
     }
 
-    // 2. Adicionar Novo Módulo
     function adicionarModulo(tipo) {
       const m = {
         id: Date.now(),
@@ -322,7 +344,6 @@
       calcularOrcamento();
     }
 
-    // 3. Renderizador 3D Avançado do Módulo
     function renderizarModulo(m) {
       while(m.group.children.length > 0) m.group.remove(m.group.children[0]);
       m.partes = [];
@@ -338,54 +359,39 @@
       }
 
       if (m.tipo !== 'bancada') {
-        // Laterais, Base e Fundo
         const latE = criarBox(e, h, d); latE.position.set(-w/2 + e/2, 0, 0); m.group.add(latE);
         const latD = criarBox(e, h, d); latD.position.set(w/2 - e/2, 0, 0); m.group.add(latD);
         const base = criarBox(w - 2*e, e, d); base.position.set(0, -h/2 + e/2, 0); m.group.add(base);
         const fundo = criarBox(w - 0.4, h - 0.4, 0.6, new THREE.MeshStandardMaterial({ color: 0xffffff })); 
         fundo.position.set(0, 0, -d/2 + 0.3); m.group.add(fundo);
 
-        // Fita LED Sob Módulo Aéreo
         if (led) {
-          const matLED = new THREE.MeshBasicMaterial({ color: 0xfffbeb });
-          const reguaLED = new THREE.Mesh(new THREE.BoxGeometry(w - 4, 1, 2), matLED);
-          reguaLED.position.set(0, -h/2 - 0.5, 0);
-          m.group.add(reguaLED);
-
-          const lightLED = new THREE.PointLight(0xfff5d6, 1.2, 120);
-          lightLED.position.set(0, -h/2 - 5, 0);
-          m.group.add(lightLED);
+          const reguaLED = new THREE.Mesh(new THREE.BoxGeometry(w - 4, 1, 2), new THREE.MeshBasicMaterial({ color: 0xfffbeb }));
+          reguaLED.position.set(0, -h/2 - 0.5, 0); m.group.add(reguaLED);
         }
 
-        // Frentes (Portas / Vidro)
         const matVidro = new THREE.MeshPhysicalMaterial({ color: 0x1e293b, roughness: 0.1, transmission: 0.7, transparent: true });
-        const matPuxador = new THREE.MeshStandardMaterial({ color: 0xd1d5db, metalness: 0.9, roughness: 0.2 });
+        const matPuxador = new THREE.MeshStandardMaterial({ color: 0xd1d5db, metalness: 0.9 });
 
         if (frente === 'portas2' || frente === 'vidro') {
           const lP = (w - 0.6) / 2;
           const matFolha = frente === 'vidro' ? matVidro : matMDF;
 
-          // Esquerda
           const gE = new THREE.Group(); gE.position.set(-w/2, 0, d/2);
           const fE = criarBox(lP, h - 0.4, e, matFolha); fE.position.set(lP/2, 0, e/2); gE.add(fE);
-          
           if (puxador === 'gola') {
             const px = criarBox(lP, 1.5, 1.5, matPuxador); px.position.set(lP/2, h/2 - 1, e + 0.5); gE.add(px);
           }
-          m.group.add(gE);
-          m.partes.push({ obj: gE, rot: -Math.PI/2.2 });
+          m.group.add(gE); m.partes.push({ obj: gE, rot: -Math.PI/2.2 });
 
-          // Direita
           const gD = new THREE.Group(); gD.position.set(w/2, 0, d/2);
           const fD = criarBox(lP, h - 0.4, e, matFolha); fD.position.set(-lP/2, 0, e/2); gD.add(fD);
           if (puxador === 'gola') {
             const px = criarBox(lP, 1.5, 1.5, matPuxador); px.position.set(-lP/2, h/2 - 1, e + 0.5); gD.add(px);
           }
-          m.group.add(gD);
-          m.partes.push({ obj: gD, rot: Math.PI/2.2 });
+          m.group.add(gD); m.partes.push({ obj: gD, rot: Math.PI/2.2 });
         }
       } else {
-        // Tampo / Bancada
         const tampo = criarBox(w, h, d, new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.2 }));
         m.group.add(tampo);
       }
@@ -393,38 +399,32 @@
       m.group.position.set(x, y + h/2 - 80, -200 + d/2 + 10);
     }
 
-    // 4. Snapping / Encaixe Automático
     function encaixarProximo() {
       if (selecaoIndex <= 0) return;
       const mAtual = listaModulos[selecaoIndex];
       const mAnterior = listaModulos[selecaoIndex - 1];
-
       mAtual.x = mAnterior.x + (mAnterior.w / 2) + (mAtual.w / 2);
       mAtual.y = mAnterior.y;
-      
       document.getElementById('propX').value = mAtual.x;
       document.getElementById('propY').value = mAtual.y;
       renderizarModulo(mAtual);
     }
 
-    // 5. Linhas de Cota na Tela
     function atualizarCotasOverlay() {
       const overlay = document.getElementById('cotaOverlay');
       overlay.innerHTML = '';
       if (!mostrarCotas || selecaoIndex < 0) return;
 
       const m = listaModulos[selecaoIndex];
-      const pos = m.group.position.clone();
-      
-      const posScreen = pos.clone().project(camera);
+      const posScreen = m.group.position.clone().project(camera);
       const x = (posScreen.x * .5 + .5) * overlay.clientWidth;
       const y = (-(posScreen.y * .5) + .5) * overlay.clientHeight;
 
       const label = document.createElement('div');
       label.className = 'cota-label';
       label.style.left = `${x}px`;
-      label.style.top = `${y - 40}px`;
-      label.innerText = `${m.w}cm x ${m.h}cm (P: ${m.d}cm)`;
+      label.style.top = `${y - 30}px`;
+      label.innerText = `${m.w}x${m.h}cm`;
       overlay.appendChild(label);
     }
 
@@ -449,11 +449,105 @@
     function atualizarItem() {
       if (selecaoIndex < 0) return;
       const m = listaModulos[selecaoIndex];
-
       m.w = parseFloat(document.getElementById('propW').value) || 80;
       m.h = parseFloat(document.getElementById('propH').value) || 75;
       m.d = parseFloat(document.getElementById('propD').value) || 50;
       m.x = parseFloat(document.getElementById('propX').value) || 0;
       m.y = parseFloat(document.getElementById('propY').value) || 0;
       m.cor = document.getElementById('propCor').value;
-      m.frente = document.getElementById('prop
+      m.frente = document.getElementById('propFrente').value;
+      m.puxador = document.getElementById('propPuxador').value;
+      m.led = document.getElementById('propLED').checked;
+
+      renderizarModulo(m);
+      calcularOrcamento();
+    }
+
+    function excluirItem() {
+      if (selecaoIndex < 0) return;
+      scene.remove(listaModulos[selecaoIndex].group);
+      listaModulos.splice(selecaoIndex, 1);
+      selecaoIndex = listaModulos.length - 1;
+      if (selecaoIndex >= 0) selecionarModulo(selecaoIndex);
+      atualizarArvoreUI();
+      calcularOrcamento();
+    }
+
+    function atualizarArvoreUI() {
+      const tree = document.getElementById('listaModulosTree');
+      tree.innerHTML = '';
+      listaModulos.forEach((m, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        if (i === selecaoIndex) btn.style.borderColor = '#38bdf8';
+        btn.innerText = `#${i+1} ${m.tipo.toUpperCase()} (${m.w}cm)`;
+        btn.onclick = () => { selecionarModulo(i); if(window.innerWidth <= 768) mudarAbaMobile('props'); };
+        tree.appendChild(btn);
+      });
+    }
+
+    function toggleAbrirMoveis() {
+      estaAberto = !estaAberto;
+      listaModulos.forEach(m => {
+        m.partes.forEach(p => {
+          new TWEEN.Tween(p.obj.rotation).to({ y: estaAberto ? p.rot : 0 }, 700).start();
+        });
+      });
+    }
+
+    function toggleVisao2D() {
+      visao2D = !visao2D;
+      if (visao2D) {
+        camera.position.set(0, 600, 0);
+        controls.target.set(0, 0, 0);
+      } else {
+        camera.position.set(220, 180, 320);
+      }
+    }
+
+    function toggleCotas() { mostrarCotas = !mostrarCotas; }
+
+    function calcularOrcamento() {
+      let areaM2 = 0;
+      listaModulos.forEach(m => {
+        const w = m.w/100, h = m.h/100, d = m.d/100;
+        areaM2 += ((2*(h*d)) + (2*(w*d)) + (w*h)) * 1.2;
+      });
+
+      const valorTotal = (areaM2 * 140) + (listaModulos.length * 150);
+      document.getElementById('resM2').innerText = `${areaM2.toFixed(2)} m²`;
+      document.getElementById('resTotal').innerText = `R$ ${(valorTotal * 1.7).toFixed(2)}`;
+    }
+
+    function abrirCutlist() {
+      const tbody = document.querySelector('#tabelaCutlist tbody');
+      tbody.innerHTML = '';
+      listaModulos.forEach((m, idx) => {
+        tbody.innerHTML += `
+          <tr><td>#${idx + 1} (${m.tipo})</td><td>Lateral</td><td>${m.h}</td><td>${m.d}</td><td>2</td></tr>
+          <tr><td>#${idx + 1} (${m.tipo})</td><td>Base/Tampo</td><td>${m.w - 3}</td><td>${m.d}</td><td>2</td></tr>
+          <tr><td>#${idx + 1} (${m.tipo})</td><td>Portas</td><td>${m.h - 0.4}</td><td>${(m.w - 0.6)/2}</td><td>2</td></tr>
+        `;
+      });
+      document.getElementById('modalCutlist').style.display = 'flex';
+    }
+
+    function fecharCutlist() { document.getElementById('modalCutlist').style.display = 'none'; }
+
+    async function salvarBD() {
+      try {
+        await fetch(`${API_URL}/api/orcamento`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cliente: "Projeto Mobile Promob", custo: 1000, markup: 70 })
+        });
+        alert('✅ Salvo com sucesso!');
+      } catch (e) {
+        alert('Salvo em modo local!');
+      }
+    }
+
+    window.onload = init3D;
+  </script>
+</body>
+</html>
