@@ -3,51 +3,55 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OrçaMóveis 3D - Promob Web Studio</title>
+  <title>OrçaMóveis 3D - Promob Web Studio Pro</title>
   <link rel="manifest" href="manifest.json">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-    body { background: #0f172a; color: #f8fafc; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-    
-    /* Viewport 3D */
-    #canvas-container { width: 100%; height: 48vh; position: relative; background: #0b0f19; }
-    #canvas-container canvas { width: 100%; height: 100%; display: block; }
-    
-    .overlay-tools { position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
-    .btn-tool { background: rgba(30, 41, 59, 0.9); backdrop-filter: blur(4px); border: 1px solid #475569; color: #38bdf8; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; }
-    .btn-tool:hover { background: #0284c7; color: #fff; }
-    .btn-danger { color: #f87171; border-color: #991b1b; }
-    .btn-danger:hover { background: #dc2626; color: #fff; }
+    body { background: #0b0f19; color: #f8fafc; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-    .hint-3d { position: absolute; top: 10px; left: 10px; background: rgba(15, 23, 42, 0.8); padding: 5px 10px; border-radius: 6px; font-size: 10px; color: #94a3b8; border: 1px solid #334155; }
+    /* Barra Superior */
+    .top-bar { height: 45px; background: #0f172a; border-bottom: 1px solid #334155; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; }
+    .brand { font-weight: 800; color: #38bdf8; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+    .top-tools { display: flex; gap: 8px; }
 
-    /* Painel de Controles */
-    .controls-panel { width: 100%; height: 52vh; background: #0f172a; padding: 14px; overflow-y: auto; border-top: 1px solid #334155; }
-    .section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #38bdf8; margin: 10px 0 6px 0; font-weight: bold; border-bottom: 1px solid #1e293b; padding-bottom: 3px; }
-
-    .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .grid-inputs-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+    /* Layout 3 Colunas Promob */
+    .app-workspace { display: flex; flex: 1; height: calc(100vh - 45px); overflow: hidden; }
     
+    /* Painel Esquerdo: Catálogo */
+    .panel-left { width: 260px; background: #0f172a; border-right: 1px solid #334155; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+    
+    /* Painel Central: Viewport 3D */
+    .viewport-container { flex: 1; position: relative; background: radial-gradient(circle at center, #1e293b 0%, #0b0f19 100%); }
+    #canvas-3d { width: 100%; height: 100%; display: block; }
+    
+    /* Overlay de Cotas na Tela */
+    .cota-overlay { position: absolute; pointer-events: none; top: 0; left: 0; width: 100%; height: 100%; }
+    .cota-label { position: absolute; background: rgba(56, 189, 248, 0.9); color: #000; font-weight: bold; font-size: 10px; padding: 2px 6px; border-radius: 4px; transform: translate(-50%, -50%); }
+
+    /* Painel Direito: Propriedades e Orçamento */
+    .panel-right { width: 300px; background: #0f172a; border-left: 1px solid #334155; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+
+    /* Utilitários UI */
+    .section-header { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #38bdf8; font-weight: bold; border-bottom: 1px solid #1e293b; padding-bottom: 4px; margin-bottom: 6px; }
+    .btn { background: #1e293b; color: #f8fafc; border: 1px solid #475569; padding: 8px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: 0.2s; width: 100%; text-align: left; display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+    .btn:hover { background: #0284c7; color: #fff; border-color: #38bdf8; }
+    .btn-action { background: #0284c7; text-align: center; justify-content: center; font-weight: 700; margin-top: 6px; }
+    .btn-action:hover { background: #0369a1; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
     .form-group { margin-bottom: 6px; }
-    .form-group.full { grid-column: span 2; }
-    
-    label { display: block; font-size: 10px; color: #94a3b8; margin-bottom: 3px; font-weight: 600; }
-    input, select { width: 100%; padding: 7px 9px; background: #1e293b; border: 1px solid #334155; border-radius: 5px; color: #fff; font-size: 12px; outline: none; }
+    label { display: block; font-size: 10px; color: #94a3b8; margin-bottom: 2px; font-weight: 600; }
+    input, select { width: 100%; padding: 6px 8px; background: #1e293b; border: 1px solid #334155; border-radius: 5px; color: #fff; font-size: 11px; outline: none; }
     input:focus, select:focus { border-color: #38bdf8; }
-    
-    /* Card de Resumo */
-    .summary-card { background: #1e293b; border: 1px solid #0284c7; border-radius: 8px; padding: 10px; margin-top: 10px; }
-    .breakdown-row { display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; margin-bottom: 3px; }
-    .total-row { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #334155; }
-    .price-tag { font-size: 20px; font-weight: 800; color: #4ade80; }
-    
-    .btn-primary { width: 100%; padding: 12px; background: #0284c7; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 14px; margin-top: 8px; cursor: pointer; }
-    .btn-secondary { width: 100%; padding: 10px; background: #334155; color: #f8fafc; border: 1px solid #475569; border-radius: 6px; font-weight: 600; font-size: 12px; margin-top: 6px; cursor: pointer; }
 
-    /* Modal Lista de Peças */
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; padding: 20px; justify-content: center; align-items: center; }
-    .modal-content { background: #1e293b; border: 1px solid #475569; border-radius: 8px; width: 100%; max-width: 600px; max-height: 80vh; overflow-y: auto; padding: 16px; color: #fff; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #334155; padding-bottom: 8px; }
+    /* Card de Preço Final */
+    .price-card { background: #1e293b; border: 1px solid #0284c7; border-radius: 8px; padding: 10px; margin-top: auto; }
+    .price-val { font-size: 20px; font-weight: 800; color: #4ade80; margin-top: 4px; }
+
+    /* Modal */
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 999; padding: 20px; justify-content: center; align-items: center; }
+    .modal-box { background: #1e293b; border: 1px solid #475569; border-radius: 8px; width: 100%; max-width: 650px; max-height: 85vh; overflow-y: auto; padding: 16px; }
     table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 8px; }
     th, td { border: 1px solid #334155; padding: 6px; text-align: left; }
     th { background: #0f172a; color: #38bdf8; }
@@ -59,122 +63,135 @@
 </head>
 <body>
 
-  <!-- Viewport 3D -->
-  <div id="canvas-container">
-    <div class="hint-3d" id="infoMódulo">Módulos na cena: 0</div>
-    <div class="overlay-tools">
-      <button class="btn-tool" onclick="adicionarModulo('balcao')">➕ Balcão Inferior</button>
-      <button class="btn-tool" onclick="adicionarModulo('aereo')">➕ Armário Aéreo</button>
-      <button class="btn-tool" onclick="adicionarModulo('torre')">➕ Torre Quente</button>
-      <button class="btn-tool" onclick="toggleVisao2D()">📐 Visão 2D / 3D</button>
-      <button class="btn-tool" onclick="toggleAbrirMoveis()">🚪 Abrir Frentes</button>
-      <button class="btn-tool btn-danger" onclick="removerModuloSelecionado()">🗑️ Excluir</button>
+  <!-- Barra Superior -->
+  <div class="top-bar">
+    <div class="brand">📐 Promob Web Studio <span>| Projetista Pro</span></div>
+    <div class="top-tools">
+      <button class="btn" style="width: auto;" onclick="toggleVisao2D()">📐 Visão 2D / 3D</button>
+      <button class="btn" style="width: auto;" onclick="toggleAbrirMoveis()">🚪 Abrir Frentes</button>
+      <button class="btn" style="width: auto;" onclick="toggleCotas()">📏 Toggle Cotas</button>
     </div>
   </div>
 
-  <!-- Controles -->
-  <div class="controls-panel">
-    <div class="form-group full">
-      <label>Cliente / Projeto</label>
-      <input type="text" id="cliente" placeholder="Ex: Cozinha Planejada - Residência Silva">
-    </div>
+  <div class="app-workspace">
+    
+    <!-- Painel Esquerdo: Módulos e Planta -->
+    <div class="panel-left">
+      <div>
+        <div class="section-header">1. Layout do Cômodo</div>
+        <div class="form-group">
+          <label>Formato da Parede</label>
+          <select id="formatoParede" onchange="construirAmbiente()">
+            <option value="reta">Parede Reta (I)</option>
+            <option value="L">Cozinha em L</option>
+            <option value="U">Cozinha em U</option>
+          </select>
+        </div>
+      </div>
 
-    <div class="section-title">Propriedades do Módulo Selecionado</div>
-    <div class="grid-inputs-3">
-      <div class="form-group">
-        <label>Largura (cm)</label>
-        <input type="number" id="largura" value="80" min="30" max="250" oninput="atualizarModuloSelecionado()">
+      <div>
+        <div class="section-header">2. Inserir Módulos</div>
+        <button class="btn" onclick="adicionarModulo('balcao')">📦 Balcão Inferior <span>+</span></button>
+        <button class="btn" onclick="adicionarModulo('aereo')">🗄️ Armário Aéreo <span>+</span></button>
+        <button class="btn" onclick="adicionarModulo('torre')">🏢 Torre Paneleiro <span>+</span></button>
+        <button class="btn" onclick="adicionarModulo('bancada')">🪵 Bancada / Tampo <span>+</span></button>
       </div>
-      <div class="form-group">
-        <label>Altura (cm)</label>
-        <input type="number" id="altura" value="75" min="30" max="240" oninput="atualizarModuloSelecionado()">
-      </div>
-      <div class="form-group">
-        <label>Profundidade (cm)</label>
-        <input type="number" id="profundidade" value="50" min="20" max="90" oninput="atualizarModuloSelecionado()">
-      </div>
-    </div>
 
-    <div class="grid-inputs">
-      <div class="form-group">
-        <label>Posição X (Parede)</label>
-        <input type="number" id="posX" value="0" step="5" oninput="atualizarModuloSelecionado()">
-      </div>
-      <div class="form-group">
-        <label>Altura do Chão (Y)</label>
-        <input type="number" id="posY" value="0" step="5" oninput="atualizarModuloSelecionado()">
+      <div>
+        <div class="section-header">3. Árvore de Móveis na Cena</div>
+        <div id="listaModulosTree" style="display: flex; flex-direction: column; gap: 4px;"></div>
       </div>
     </div>
 
-    <div class="grid-inputs">
+    <!-- Viewport 3D Central -->
+    <div class="viewport-container" id="viewport">
+      <canvas id="canvas-3d"></canvas>
+      <div class="cota-overlay" id="cotaOverlay"></div>
+    </div>
+
+    <!-- Painel Direito: Propriedades e Preço -->
+    <div class="panel-right">
+      <div class="section-header">Propriedades do Item</div>
+      
+      <div class="grid-3">
+        <div class="form-group"><label>Larg (cm)</label><input type="number" id="propW" oninput="atualizarItem()"></div>
+        <div class="form-group"><label>Alt (cm)</label><input type="number" id="propH" oninput="atualizarItem()"></div>
+        <div class="form-group"><label>Prof (cm)</label><input type="number" id="propD" oninput="atualizarItem()"></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group"><label>Posição X</label><input type="number" id="propX" step="5" oninput="atualizarItem()"></div>
+        <div class="form-group"><label>Altura Y</label><input type="number" id="propY" step="5" oninput="atualizarItem()"></div>
+      </div>
+
+      <button class="btn" onclick="encaixarProximo()" style="background: #0369a1; border-color: #38bdf8;">🧲 Encaixar Automático (Snap)</button>
+
+      <div class="section-header" style="margin-top: 8px;">Acabamento e Ferragens</div>
+      
       <div class="form-group">
-        <label>Padrão MDF (Catálogo)</label>
-        <select id="corMDF" onchange="atualizarModuloSelecionado()">
+        <label>Padrão MDF</label>
+        <select id="propCor" onchange="atualizarItem()">
           <option value="#d4a373">Freijó Purus (Arauco)</option>
-          <option value="#6c482f">Louro Freijó (Duratex)</option>
-          <option value="#4a5568">Gianduia Trama (Duratex)</option>
-          <option value="#1e293b">Grafite Escuro (Guararapes)</option>
+          <option value="#5c3d2e">Louro Freijó (Duratex)</option>
+          <option value="#334155">Gianduia / Grafite Escuro</option>
           <option value="#f8fafc">Branco Supremo TX</option>
         </select>
       </div>
-      <div class="form-group">
-        <label>Tipo de Frente</label>
-        <select id="tipoFrente" onchange="atualizarModuloSelecionado()">
-          <option value="portas2">2 Portas de Abrir</option>
-          <option value="porta1">1 Porta Única</option>
-          <option value="gavetas3">3 Gavetas</option>
-          <option value="gavetas4">4 Gavetas</option>
-          <option value="nicho">Nicho Aberto</option>
-        </select>
-      </div>
-    </div>
 
-    <div class="section-title">Valores & Orçamento do Ambiente</div>
-    <div class="grid-inputs-3">
-      <div class="form-group">
-        <label>MDF/m² (R$)</label>
-        <input type="number" id="custoM2" value="130" oninput="calcularTotalAmbiente()">
-      </div>
-      <div class="form-group">
-        <label>Ferragens/Mód (R$)</label>
-        <input type="number" id="custoFerragens" value="120" oninput="calcularTotalAmbiente()">
-      </div>
-      <div class="form-group">
-        <label>Markup (%)</label>
-        <input type="number" id="markup" value="70" oninput="calcularTotalAmbiente()">
-      </div>
-    </div>
-
-    <div class="summary-card">
-      <div class="breakdown-row">
-        <span>Área Total de Chapa:</span>
-        <strong id="areaM2Total">0.00 m²</strong>
-      </div>
-      <div class="breakdown-row">
-        <span>Módulos no Projeto:</span>
-        <strong id="qtdModulosText">0</strong>
-      </div>
-      <div class="total-row">
-        <div>
-          <span style="font-size: 10px; color: #94a3b8; display: block;">ORÇAMENTO TOTAL DO PROJETO</span>
-          <div class="price-tag" id="resValor">R$ 0,00</div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Frentes</label>
+          <select id="propFrente" onchange="atualizarItem()">
+            <option value="portas2">2 Portas</option>
+            <option value="porta1">1 Porta</option>
+            <option value="gavetas3">3 Gavetas</option>
+            <option value="vidro">Porta Vidro Reflecta</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Puxador</label>
+          <select id="propPuxador" onchange="atualizarItem()">
+            <option value="gola">Perfil Gola Alumínio</option>
+            <option value="cava">Cava Usinada</option>
+            <option value="alca">Alça Inox</option>
+          </select>
         </div>
       </div>
+
+      <div class="form-group">
+        <label>
+          <input type="checkbox" id="propLED" onchange="atualizarItem()" style="width: auto;"> 💡 Iluminação Fita LED Embutida
+        </label>
+      </div>
+
+      <button class="btn" style="color: #f87171; border-color: #7f1d1d;" onclick="excluirItem()">🗑️ Excluir Módulo</button>
+
+      <!-- Resumo Financeiro -->
+      <div class="price-card">
+        <div class="section-header" style="border:none; margin:0;">Resumo do Orçamento</div>
+        <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">
+          Chapa Total: <strong id="resM2" style="color:#fff;">0.00 m²</strong>
+        </div>
+        <div style="font-size: 11px; color: #94a3b8;">
+          Módulos: <strong id="resQtd" style="color:#fff;">0</strong>
+        </div>
+        <div class="price-val" id="resTotal">R$ 0,00</div>
+      </div>
+
+      <button class="btn btn-action" onclick="abrirCutlist()">📋 Plano de Corte (Cutlist)</button>
+      <button class="btn btn-action" style="background:#16a34a;" onclick="salvarBD()">💾 Salvar no Banco de Dados</button>
     </div>
 
-    <button class="btn-secondary" onclick="abrirModalPlanoCorte()">📋 Gerar Lista de Peças / Plano de Corte</button>
-    <button class="btn-primary" onclick="salvarOrcamento()">💾 Salvar Projeto no Banco de Dados</button>
   </div>
 
-  <!-- Modal Plano de Corte -->
-  <div id="modalCorte" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 style="color:#38bdf8;">Lista de Peças p/ Central de Corte</h3>
-        <button onclick="fecharModalPlanoCorte()" style="background:none; border:none; color:#fff; font-size:18px; cursor:pointer;">✕</button>
+  <!-- Modal Cutlist -->
+  <div id="modalCutlist" class="modal">
+    <div class="modal-box">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="color:#38bdf8;">Lista de Peças p/ Corte e Bordo</h3>
+        <button onclick="fecharCutlist()" style="background:none; border:none; color:#fff; font-size:18px; cursor:pointer;">✕</button>
       </div>
-      <p style="font-size: 11px; color: #94a3b8;">Relação de chapas calculadas para furação e fitamento de bordo:</p>
-      <table id="tabelaPecas">
+      <table id="tabelaCutlist">
         <thead>
           <tr>
             <th>Módulo</th>
@@ -182,6 +199,7 @@
             <th>Comp. (cm)</th>
             <th>Larg. (cm)</th>
             <th>Qtd</th>
+            <th>Fita Bordo</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -194,49 +212,41 @@
 
     let scene, camera, renderer, controls;
     let listaModulos = [];
-    let moduloSelecionadoIndex = -1;
-    let estaAberto = false;
-    let visao2D = false;
+    let selecaoIndex = -1;
+    let mostrarCotas = true, estaAberto = false, visao2D = false;
+    let paredesGroup;
 
     function init3D() {
-      const container = document.getElementById('canvas-container');
+      const container = document.getElementById('viewport');
       
       scene = new THREE.Scene();
       scene.background = new THREE.Color(0x0b0f19);
 
-      camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 2000);
-      camera.position.set(180, 160, 280);
+      camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 1, 3000);
+      camera.position.set(220, 180, 320);
 
-      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas-3d'), antialias: true });
       renderer.setSize(container.clientWidth, container.clientHeight);
       renderer.setPixelRatio(window.devicePixelRatio);
       renderer.shadowMap.enabled = true;
-      container.appendChild(renderer.domElement);
 
       controls = new THREE.OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
 
-      // Luzes do Ambiente
+      // Iluminação de Estúdio
       scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-      const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-      dirLight.position.set(200, 300, 200);
-      dirLight.castShadow = true;
-      scene.add(dirLight);
+      const sun = new THREE.DirectionalLight(0xffffff, 0.8);
+      sun.position.set(200, 400, 300);
+      sun.castShadow = true;
+      scene.add(sun);
 
-      // Parede de Fundo e Piso (Cenário)
-      const matParede = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.9 });
-      const parede = new THREE.Mesh(new THREE.PlaneGeometry(800, 400), matParede);
-      parede.position.set(0, 120, -100);
-      scene.add(parede);
+      paredesGroup = new THREE.Group();
+      scene.add(paredesGroup);
 
-      const gridHelper = new THREE.GridHelper(800, 40, 0x334155, 0x1e293b);
-      gridHelper.position.set(0, -80, 300);
-      scene.add(gridHelper);
-
-      // Adiciona primeiro módulo padrão
+      construirAmbiente();
       adicionarModulo('balcao');
 
-      window.addEventListener('resize', onWindowResize);
+      window.addEventListener('resize', onResize);
       animate();
     }
 
@@ -245,224 +255,205 @@
       TWEEN.update();
       controls.update();
       renderer.render(scene, camera);
+      atualizarCotasOverlay();
     }
 
-    function onWindowResize() {
-      const container = document.getElementById('canvas-container');
+    function onResize() {
+      const container = document.getElementById('viewport');
       camera.aspect = container.clientWidth / container.clientHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(container.clientWidth, container.clientHeight);
     }
 
-    // Estrutura de criação de chapa
-    function criarChapa(w, h, d, colorHex) {
-      const group = new THREE.Group();
-      const geom = new THREE.BoxGeometry(w, h, d);
-      const mat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.5 });
-      const mesh = new THREE.Mesh(geom, mat);
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      group.add(mesh);
+    // 1. Construtor de Paredes / Cômodo
+    function construirAmbiente() {
+      while(paredesGroup.children.length > 0) paredesGroup.remove(paredesGroup.children[0]);
 
-      const line = new THREE.LineSegments(new THREE.EdgesGeometry(geom), new THREE.LineBasicMaterial({ color: 0x000000, opacity: 0.2, transparent: true }));
-      group.add(line);
+      const tipo = document.getElementById('formatoParede').value;
+      const matParede = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.9 });
+      const matPiso = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.4 });
 
-      return group;
+      // Piso
+      const piso = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), matPiso);
+      piso.rotation.x = -Math.PI / 2;
+      piso.position.y = -80;
+      paredesGroup.add(piso);
+
+      // Paredes
+      const p1 = new THREE.Mesh(new THREE.BoxGeometry(600, 300, 10), matParede);
+      p1.position.set(0, 70, -200);
+      paredesGroup.add(p1);
+
+      if (tipo === 'L' || tipo === 'U') {
+        const p2 = new THREE.Mesh(new THREE.BoxGeometry(10, 300, 400), matParede);
+        p2.position.set(-300, 70, 0);
+        paredesGroup.add(p2);
+      }
+      if (tipo === 'U') {
+        const p3 = new THREE.Mesh(new THREE.BoxGeometry(10, 300, 400), matParede);
+        p3.position.set(300, 70, 0);
+        paredesGroup.add(p3);
+      }
     }
 
-    // Adiciona novo módulo ao cenário
+    // 2. Adicionar Novo Módulo
     function adicionarModulo(tipo) {
-      const id = Date.now();
-      let config = {
-        id,
+      const m = {
+        id: Date.now(),
         tipo,
-        w: tipo === 'torre' ? 60 : 80,
-        h: tipo === 'aereo' ? 70 : (tipo === 'torre' ? 210 : 75),
-        d: tipo === 'aereo' ? 35 : 50,
-        posX: (listaModulos.length * 85) - 100,
-        posY: tipo === 'aereo' ? 140 : 0,
-        corHex: '#d4a373',
-        tipoFrente: tipo === 'torre' ? 'portas2' : 'portas2',
+        w: tipo === 'bancada' ? 160 : (tipo === 'torre' ? 60 : 80),
+        h: tipo === 'aereo' ? 70 : (tipo === 'bancada' ? 4 : (tipo === 'torre' ? 210 : 75)),
+        d: tipo === 'aereo' ? 35 : (tipo === 'bancada' ? 55 : 50),
+        x: (listaModulos.length * 85) - 100,
+        y: tipo === 'aereo' ? 140 : (tipo === 'bancada' ? 75 : 0),
+        cor: '#d4a373',
+        frente: 'portas2',
+        puxador: 'gola',
+        led: tipo === 'aereo',
         group: new THREE.Group(),
-        partesMoveis: []
+        partes: []
       };
 
-      scene.add(config.group);
-      listaModulos.push(config);
-      moduloSelecionadoIndex = listaModulos.length - 1;
-
-      renderizarModulo(config);
-      carregarFormularioModulo(config);
-      calcularTotalAmbiente();
+      scene.add(m.group);
+      listaModulos.push(m);
+      selecionarModulo(listaModulos.length - 1);
+      renderizarModulo(m);
+      atualizarArvoreUI();
+      calcularOrcamento();
     }
 
-    // Renderiza o módulo em 3D
+    // 3. Renderizador 3D Avançado do Módulo
     function renderizarModulo(m) {
-      while(m.group.children.length > 0) { m.group.remove(m.group.children[0]); }
-      m.partesMoveis = [];
+      while(m.group.children.length > 0) m.group.remove(m.group.children[0]);
+      m.partes = [];
 
       const e = 1.5;
-      const { w, h, d, corHex, posX, posY, tipoFrente } = m;
+      const { w, h, d, cor, x, y, frente, puxador, led } = m;
+      const matMDF = new THREE.MeshStandardMaterial({ color: parseInt(cor.replace('#','0x')), roughness: 0.6 });
 
-      // 1. Caixa
-      const latE = criarChapa(e, h, d, corHex); latE.position.set(-w/2 + e/2, 0, 0); m.group.add(latE);
-      const latD = criarChapa(e, h, d, corHex); latD.position.set(w/2 - e/2, 0, 0); m.group.add(latD);
-      const base = criarChapa(w - 2*e, e, d, corHex); base.position.set(0, -h/2 + e/2, 0); m.group.add(base);
-      const fundo = criarChapa(w - 0.4, h - 0.4, 0.6, 0xffffff); fundo.position.set(0, 0, -d/2 + 0.3); m.group.add(fundo);
-
-      // 2. Frentes
-      const zF = d/2 + e/2 + 0.1;
-      const matPux = new THREE.MeshStandardMaterial({ color: 0xd1d5db, metalness: 0.8 });
-
-      if (tipoFrente === 'portas2') {
-        const lP = (w - 0.6) / 2;
-        // Esquerda
-        const gE = new THREE.Group(); gE.position.set(-w/2, 0, d/2);
-        const fE = criarChapa(lP, h - 0.4, e, corHex); fE.position.set(lP/2, 0, e/2);
-        const pxE = new THREE.Mesh(new THREE.BoxGeometry(1, 10, 1.5), matPux); pxE.position.set(lP - 2, 0, e + 0.5); fE.add(pxE);
-        gE.add(fE); m.group.add(gE);
-        m.partesMoveis.push({ obj: gE, tipo: 'rot', ang: -Math.PI/2.2 });
-
-        // Direita
-        const gD = new THREE.Group(); gD.position.set(w/2, 0, d/2);
-        const fD = criarChapa(lP, h - 0.4, e, corHex); fD.position.set(-lP/2, 0, e/2);
-        const pxD = new THREE.Mesh(new THREE.BoxGeometry(1, 10, 1.5), matPux); pxD.position.set(-lP + 2, 0, e + 0.5); fD.add(pxD);
-        gD.add(fD); m.group.add(gD);
-        m.partesMoveis.push({ obj: gD, tipo: 'rot', ang: Math.PI/2.2 });
+      function criarBox(bw, bh, bd, mat) {
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(bw, bh, bd), mat || matMDF);
+        mesh.castShadow = true; mesh.receiveShadow = true;
+        return mesh;
       }
 
-      // Posiciona no Cenário
-      m.group.position.set(posX, posY + h/2 - 80, -100 + d/2);
-    }
+      if (m.tipo !== 'bancada') {
+        // Laterais, Base e Fundo
+        const latE = criarBox(e, h, d); latE.position.set(-w/2 + e/2, 0, 0); m.group.add(latE);
+        const latD = criarBox(e, h, d); latD.position.set(w/2 - e/2, 0, 0); m.group.add(latD);
+        const base = criarBox(w - 2*e, e, d); base.position.set(0, -h/2 + e/2, 0); m.group.add(base);
+        const fundo = criarBox(w - 0.4, h - 0.4, 0.6, new THREE.MeshStandardMaterial({ color: 0xffffff })); 
+        fundo.position.set(0, 0, -d/2 + 0.3); m.group.add(fundo);
 
-    function atualizarModuloSelecionado() {
-      if (moduloSelecionadoIndex < 0) return;
-      let m = listaModulos[moduloSelecionadoIndex];
+        // Fita LED Sob Módulo Aéreo
+        if (led) {
+          const matLED = new THREE.MeshBasicMaterial({ color: 0xfffbeb });
+          const reguaLED = new THREE.Mesh(new THREE.BoxGeometry(w - 4, 1, 2), matLED);
+          reguaLED.position.set(0, -h/2 - 0.5, 0);
+          m.group.add(reguaLED);
 
-      m.w = parseFloat(document.getElementById('largura').value) || 80;
-      m.h = parseFloat(document.getElementById('altura').value) || 75;
-      m.d = parseFloat(document.getElementById('profundidade').value) || 50;
-      m.posX = parseFloat(document.getElementById('posX').value) || 0;
-      m.posY = parseFloat(document.getElementById('posY').value) || 0;
-      m.corHex = document.getElementById('corMDF').value;
-      m.tipoFrente = document.getElementById('tipoFrente').value;
+          const lightLED = new THREE.PointLight(0xfff5d6, 1.2, 120);
+          lightLED.position.set(0, -h/2 - 5, 0);
+          m.group.add(lightLED);
+        }
 
-      renderizarModulo(m);
-      calcularTotalAmbiente();
-    }
+        // Frentes (Portas / Vidro)
+        const matVidro = new THREE.MeshPhysicalMaterial({ color: 0x1e293b, roughness: 0.1, transmission: 0.7, transparent: true });
+        const matPuxador = new THREE.MeshStandardMaterial({ color: 0xd1d5db, metalness: 0.9, roughness: 0.2 });
 
-    function carregarFormularioModulo(m) {
-      document.getElementById('largura').value = m.w;
-      document.getElementById('altura').value = m.h;
-      document.getElementById('profundidade').value = m.d;
-      document.getElementById('posX').value = m.posX;
-      document.getElementById('posY').value = m.posY;
-      document.getElementById('corMDF').value = m.corHex;
-      document.getElementById('tipoFrente').value = m.tipoFrente;
-    }
+        if (frente === 'portas2' || frente === 'vidro') {
+          const lP = (w - 0.6) / 2;
+          const matFolha = frente === 'vidro' ? matVidro : matMDF;
 
-    function removerModuloSelecionado() {
-      if (moduloSelecionadoIndex < 0) return;
-      scene.remove(listaModulos[moduloSelecionadoIndex].group);
-      listaModulos.splice(moduloSelecionadoIndex, 1);
-      moduloSelecionadoIndex = listaModulos.length - 1;
-      if (moduloSelecionadoIndex >= 0) carregarFormularioModulo(listaModulos[moduloSelecionadoIndex]);
-      calcularTotalAmbiente();
-    }
+          // Esquerda
+          const gE = new THREE.Group(); gE.position.set(-w/2, 0, d/2);
+          const fE = criarBox(lP, h - 0.4, e, matFolha); fE.position.set(lP/2, 0, e/2); gE.add(fE);
+          
+          if (puxador === 'gola') {
+            const px = criarBox(lP, 1.5, 1.5, matPuxador); px.position.set(lP/2, h/2 - 1, e + 0.5); gE.add(px);
+          }
+          m.group.add(gE);
+          m.partes.push({ obj: gE, rot: -Math.PI/2.2 });
 
-    function toggleVisao2D() {
-      visao2D = !visao2D;
-      if (visao2D) {
-        camera.position.set(0, 500, 0);
-        controls.target.set(0, 0, 0);
+          // Direita
+          const gD = new THREE.Group(); gD.position.set(w/2, 0, d/2);
+          const fD = criarBox(lP, h - 0.4, e, matFolha); fD.position.set(-lP/2, 0, e/2); gD.add(fD);
+          if (puxador === 'gola') {
+            const px = criarBox(lP, 1.5, 1.5, matPuxador); px.position.set(-lP/2, h/2 - 1, e + 0.5); gD.add(px);
+          }
+          m.group.add(gD);
+          m.partes.push({ obj: gD, rot: Math.PI/2.2 });
+        }
       } else {
-        camera.position.set(180, 160, 280);
+        // Tampo / Bancada
+        const tampo = criarBox(w, h, d, new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.2 }));
+        m.group.add(tampo);
       }
+
+      m.group.position.set(x, y + h/2 - 80, -200 + d/2 + 10);
     }
 
-    function toggleAbrirMoveis() {
-      estaAberto = !estaAberto;
-      listaModulos.forEach(m => {
-        m.partesMoveis.forEach(p => {
-          new TWEEN.Tween(p.obj.rotation).to({ y: estaAberto ? p.ang : 0 }, 600).start();
-        });
-      });
+    // 4. Snapping / Encaixe Automático
+    function encaixarProximo() {
+      if (selecaoIndex <= 0) return;
+      const mAtual = listaModulos[selecaoIndex];
+      const mAnterior = listaModulos[selecaoIndex - 1];
+
+      mAtual.x = mAnterior.x + (mAnterior.w / 2) + (mAtual.w / 2);
+      mAtual.y = mAnterior.y;
+      
+      document.getElementById('propX').value = mAtual.x;
+      document.getElementById('propY').value = mAtual.y;
+      renderizarModulo(mAtual);
     }
 
-    function calcularTotalAmbiente() {
-      let areaTotalM2 = 0;
-      const custoM2 = parseFloat(document.getElementById('custoM2').value) || 0;
-      const custoFerragens = parseFloat(document.getElementById('custoFerragens').value) || 0;
-      const markup = parseFloat(document.getElementById('markup').value) || 0;
+    // 5. Linhas de Cota na Tela
+    function atualizarCotasOverlay() {
+      const overlay = document.getElementById('cotaOverlay');
+      overlay.innerHTML = '';
+      if (!mostrarCotas || selecaoIndex < 0) return;
 
-      listaModulos.forEach(m => {
-        const w = m.w / 100, h = m.h / 100, d = m.d / 100;
-        const areaModulo = ((2 * (h * d)) + (2 * (w * d)) + (w * h)) * 1.25;
-        areaTotalM2 += areaModulo;
-      });
+      const m = listaModulos[selecaoIndex];
+      const pos = m.group.position.clone();
+      
+      const posScreen = pos.clone().project(camera);
+      const x = (posScreen.x * .5 + .5) * overlay.clientWidth;
+      const y = (-(posScreen.y * .5) + .5) * overlay.clientHeight;
 
-      const custoMaterial = (areaTotalM2 * custoM2) + (listaModulos.length * custoFerragens);
-      const valorFinal = custoMaterial * (1 + (markup / 100));
-
-      document.getElementById('areaM2Total').innerText = `${areaTotalM2.toFixed(2)} m²`;
-      document.getElementById('qtdModulosText').innerText = listaModulos.length;
-      document.getElementById('resValor').innerText = `R$ ${valorFinal.toFixed(2)}`;
-      document.getElementById('infoMódulo').innerText = `Módulos na cena: ${listaModulos.length}`;
-
-      return { custoMaterial, valorFinal };
+      const label = document.createElement('div');
+      label.className = 'cota-label';
+      label.style.left = `${x}px`;
+      label.style.top = `${y - 40}px`;
+      label.innerText = `${m.w}cm x ${m.h}cm (P: ${m.d}cm)`;
+      overlay.appendChild(label);
     }
 
-    function abrirModalPlanoCorte() {
-      const tbody = document.querySelector('#tabelaPecas tbody');
-      tbody.innerHTML = '';
+    function selecionarModulo(idx) {
+      selecaoIndex = idx;
+      if (idx < 0) return;
+      const m = listaModulos[idx];
 
-      listaModulos.forEach((m, idx) => {
-        const pecas = [
-          { nome: 'Lateral', c: m.h, l: m.d, q: 2 },
-          { nome: 'Base / Tampo', c: m.w - 3, l: m.d, q: 2 },
-          { nome: 'Fundo Traseiro', c: m.h - 0.4, l: m.w - 0.4, q: 1 },
-          { nome: 'Porta / Frente', c: m.h - 0.4, l: (m.w - 0.6) / 2, q: 2 }
-        ];
+      document.getElementById('propW').value = m.w;
+      document.getElementById('propH').value = m.h;
+      document.getElementById('propD').value = m.d;
+      document.getElementById('propX').value = m.x;
+      document.getElementById('propY').value = m.y;
+      document.getElementById('propCor').value = m.cor;
+      document.getElementById('propFrente').value = m.frente;
+      document.getElementById('propPuxador').value = m.puxador;
+      document.getElementById('propLED').checked = m.led;
 
-        pecas.forEach(p => {
-          tbody.innerHTML += `
-            <tr>
-              <td>Módulo #${idx + 1} (${m.tipo})</td>
-              <td>${p.nome}</td>
-              <td>${p.c} cm</td>
-              <td>${p.l} cm</td>
-              <td>${p.q}</td>
-            </tr>
-          `;
-        });
-      });
-
-      document.getElementById('modalCorte').style.display = 'flex';
+      atualizarArvoreUI();
     }
 
-    function fecharModalPlanoCorte() {
-      document.getElementById('modalCorte').style.display = 'none';
-    }
+    function atualizarItem() {
+      if (selecaoIndex < 0) return;
+      const m = listaModulos[selecaoIndex];
 
-    async function salvarOrcamento() {
-      const cliente = document.getElementById('cliente').value;
-      if (!cliente) { alert('Digite o nome do cliente!'); return; }
-
-      const { custoMaterial, valorFinal } = calcularTotalAmbiente();
-
-      try {
-        const res = await fetch(`${API_URL}/api/orcamento`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cliente, custo: custoMaterial, markup: 70 })
-        });
-        if (res.ok) alert('✅ Projeto do ambiente e lista salvos com sucesso!');
-      } catch (e) {
-        alert(`Projeto calculado: R$ ${valorFinal.toFixed(2)} (Salvo Off-line)`);
-      }
-    }
-
-    window.onload = init3D;
-  </script>
-</body>
-</html>
+      m.w = parseFloat(document.getElementById('propW').value) || 80;
+      m.h = parseFloat(document.getElementById('propH').value) || 75;
+      m.d = parseFloat(document.getElementById('propD').value) || 50;
+      m.x = parseFloat(document.getElementById('propX').value) || 0;
+      m.y = parseFloat(document.getElementById('propY').value) || 0;
+      m.cor = document.getElementById('propCor').value;
+      m.frente = document.getElementById('prop
