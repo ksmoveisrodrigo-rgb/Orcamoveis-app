@@ -3,50 +3,56 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OrçaMóveis 3D - Studio Pro</title>
+  <title>OrçaMóveis 3D - Promob Web Studio</title>
   <link rel="manifest" href="manifest.json">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     body { background: #0f172a; color: #f8fafc; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
     
     /* Viewport 3D */
-    #canvas-container { width: 100%; height: 42vh; position: relative; background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%); }
+    #canvas-container { width: 100%; height: 48vh; position: relative; background: #0b0f19; }
     #canvas-container canvas { width: 100%; height: 100%; display: block; }
     
-    .overlay-tools { position: absolute; top: 12px; right: 12px; display: flex; gap: 8px; }
-    .btn-tool { background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(4px); border: 1px solid #475569; color: #38bdf8; padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    .overlay-tools { position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+    .btn-tool { background: rgba(30, 41, 59, 0.9); backdrop-filter: blur(4px); border: 1px solid #475569; color: #38bdf8; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; }
     .btn-tool:hover { background: #0284c7; color: #fff; }
+    .btn-danger { color: #f87171; border-color: #991b1b; }
+    .btn-danger:hover { background: #dc2626; color: #fff; }
 
-    .hint-3d { position: absolute; top: 12px; left: 12px; background: rgba(15, 23, 42, 0.75); padding: 6px 12px; border-radius: 20px; font-size: 11px; color: #94a3b8; pointer-events: none; border: 1px solid #334155; }
+    .hint-3d { position: absolute; top: 10px; left: 10px; background: rgba(15, 23, 42, 0.8); padding: 5px 10px; border-radius: 6px; font-size: 10px; color: #94a3b8; border: 1px solid #334155; }
 
     /* Painel de Controles */
-    .controls-panel { width: 100%; height: 58vh; background: #0f172a; padding: 16px; overflow-y: auto; border-top: 1px solid #334155; }
-    .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    h2 { font-size: 18px; color: #38bdf8; font-weight: 700; }
-    
-    .section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin: 12px 0 6px 0; font-weight: bold; }
+    .controls-panel { width: 100%; height: 52vh; background: #0f172a; padding: 14px; overflow-y: auto; border-top: 1px solid #334155; }
+    .section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #38bdf8; margin: 10px 0 6px 0; font-weight: bold; border-bottom: 1px solid #1e293b; padding-bottom: 3px; }
 
-    .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .grid-inputs-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .grid-inputs-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
     
-    .form-group { margin-bottom: 8px; }
+    .form-group { margin-bottom: 6px; }
     .form-group.full { grid-column: span 2; }
     
-    label { display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600; }
-    input, select { width: 100%; padding: 8px 10px; background: #1e293b; border: 1px solid #334155; border-radius: 6px; color: #fff; font-size: 13px; outline: none; }
-    input:focus, select:focus { border-color: #38bdf8; box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2); }
+    label { display: block; font-size: 10px; color: #94a3b8; margin-bottom: 3px; font-weight: 600; }
+    input, select { width: 100%; padding: 7px 9px; background: #1e293b; border: 1px solid #334155; border-radius: 5px; color: #fff; font-size: 12px; outline: none; }
+    input:focus, select:focus { border-color: #38bdf8; }
     
-    /* Card de Resumo de Custos */
-    .summary-card { background: #1e293b; border: 1px solid #0284c7; border-radius: 10px; padding: 12px; margin-top: 12px; }
-    .breakdown-row { display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8; margin-bottom: 4px; }
-    .total-row { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #334155; }
-    .price-tag { font-size: 22px; font-weight: 800; color: #4ade80; }
+    /* Card de Resumo */
+    .summary-card { background: #1e293b; border: 1px solid #0284c7; border-radius: 8px; padding: 10px; margin-top: 10px; }
+    .breakdown-row { display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; margin-bottom: 3px; }
+    .total-row { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #334155; }
+    .price-tag { font-size: 20px; font-weight: 800; color: #4ade80; }
     
-    .btn-primary { width: 100%; padding: 14px; background: #0284c7; color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 15px; margin-top: 12px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3); }
-    .btn-primary:active { transform: scale(0.99); background: #0369a1; }
+    .btn-primary { width: 100%; padding: 12px; background: #0284c7; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 14px; margin-top: 8px; cursor: pointer; }
+    .btn-secondary { width: 100%; padding: 10px; background: #334155; color: #f8fafc; border: 1px solid #475569; border-radius: 6px; font-weight: 600; font-size: 12px; margin-top: 6px; cursor: pointer; }
+
+    /* Modal Lista de Peças */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; padding: 20px; justify-content: center; align-items: center; }
+    .modal-content { background: #1e293b; border: 1px solid #475569; border-radius: 8px; width: 100%; max-width: 600px; max-height: 80vh; overflow-y: auto; padding: 16px; color: #fff; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #334155; padding-bottom: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 8px; }
+    th, td { border: 1px solid #334155; padding: 6px; text-align: left; }
+    th { background: #0f172a; color: #38bdf8; }
   </style>
 
-  <!-- Bibliotecas 3D -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
@@ -55,130 +61,151 @@
 
   <!-- Viewport 3D -->
   <div id="canvas-container">
-    <div class="hint-3d">🔄 Arraste p/ Girar | 🔍 Zoom</div>
+    <div class="hint-3d" id="infoMódulo">Módulos na cena: 0</div>
     <div class="overlay-tools">
-      <button class="btn-tool" onclick="toggleAbrirMoveis()">🚪 Abrir / Fechar</button>
+      <button class="btn-tool" onclick="adicionarModulo('balcao')">➕ Balcão Inferior</button>
+      <button class="btn-tool" onclick="adicionarModulo('aereo')">➕ Armário Aéreo</button>
+      <button class="btn-tool" onclick="adicionarModulo('torre')">➕ Torre Quente</button>
+      <button class="btn-tool" onclick="toggleVisao2D()">📐 Visão 2D / 3D</button>
+      <button class="btn-tool" onclick="toggleAbrirMoveis()">🚪 Abrir Frentes</button>
+      <button class="btn-tool btn-danger" onclick="removerModuloSelecionado()">🗑️ Excluir</button>
     </div>
   </div>
 
   <!-- Controles -->
   <div class="controls-panel">
-    <div class="panel-header">
-      <h2>Modulador 3D Pro</h2>
-    </div>
-
     <div class="form-group full">
-      <label>Cliente / Nome do Projeto</label>
-      <input type="text" id="cliente" placeholder="Ex: Cozinha Planejada - Dona Maria">
+      <label>Cliente / Projeto</label>
+      <input type="text" id="cliente" placeholder="Ex: Cozinha Planejada - Residência Silva">
     </div>
 
-    <div class="section-title">1. Dimensoes do Modulo (cm)</div>
+    <div class="section-title">Propriedades do Módulo Selecionado</div>
     <div class="grid-inputs-3">
       <div class="form-group">
-        <label>Largura</label>
-        <input type="number" id="largura" value="80" min="30" max="250" oninput="atualizarModelo3D()">
+        <label>Largura (cm)</label>
+        <input type="number" id="largura" value="80" min="30" max="250" oninput="atualizarModuloSelecionado()">
       </div>
       <div class="form-group">
-        <label>Altura</label>
-        <input type="number" id="altura" value="75" min="30" max="240" oninput="atualizarModelo3D()">
+        <label>Altura (cm)</label>
+        <input type="number" id="altura" value="75" min="30" max="240" oninput="atualizarModuloSelecionado()">
       </div>
       <div class="form-group">
-        <label>Profundidade</label>
-        <input type="number" id="profundidade" value="50" min="20" max="90" oninput="atualizarModelo3D()">
+        <label>Profundidade (cm)</label>
+        <input type="number" id="profundidade" value="50" min="20" max="90" oninput="atualizarModuloSelecionado()">
       </div>
     </div>
 
-    <div class="section-title">2. Estilo & Estrutura Interna</div>
     <div class="grid-inputs">
       <div class="form-group">
-        <label>MDF / Acabamento</label>
-        <select id="corMDF" onchange="atualizarModelo3D()">
-          <option value="#d4a373">Carvalho Mazi (Claro)</option>
-          <option value="#4a2c11">Nogueira (Escuro)</option>
+        <label>Posição X (Parede)</label>
+        <input type="number" id="posX" value="0" step="5" oninput="atualizarModuloSelecionado()">
+      </div>
+      <div class="form-group">
+        <label>Altura do Chão (Y)</label>
+        <input type="number" id="posY" value="0" step="5" oninput="atualizarModuloSelecionado()">
+      </div>
+    </div>
+
+    <div class="grid-inputs">
+      <div class="form-group">
+        <label>Padrão MDF (Catálogo)</label>
+        <select id="corMDF" onchange="atualizarModuloSelecionado()">
+          <option value="#d4a373">Freijó Purus (Arauco)</option>
+          <option value="#6c482f">Louro Freijó (Duratex)</option>
+          <option value="#4a5568">Gianduia Trama (Duratex)</option>
+          <option value="#1e293b">Grafite Escuro (Guararapes)</option>
           <option value="#f8fafc">Branco Supremo TX</option>
-          <option value="#334155">Grafite Loango</option>
         </select>
       </div>
       <div class="form-group">
-        <label>Prateleiras Internas</label>
-        <select id="numPrateleiras" onchange="atualizarModelo3D()">
-          <option value="0">Sem Prateleira</option>
-          <option value="1" selected>1 Prateleira</option>
-          <option value="2">2 Prateleiras</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="grid-inputs">
-      <div class="form-group">
-        <label>Frentes</label>
-        <select id="tipoFrente" onchange="atualizarModelo3D()">
-          <option value="portas2" selected>2 Portas de Abrir</option>
-          <option value="porta1">1 Porta Unica</option>
+        <label>Tipo de Frente</label>
+        <select id="tipoFrente" onchange="atualizarModuloSelecionado()">
+          <option value="portas2">2 Portas de Abrir</option>
+          <option value="porta1">1 Porta Única</option>
           <option value="gavetas3">3 Gavetas</option>
           <option value="gavetas4">4 Gavetas</option>
-          <option value="nicho">Nicho Aberto (Sem Porta)</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Tampo / Bancada Superior</label>
-        <select id="tipoTampo" onchange="atualizarModelo3D()">
-          <option value="mdf">Tampo MDF Mesma Cor</option>
-          <option value="marmore">Bancada Granito Preto</option>
-          <option value="sem">Sem Tampo (Sob Encaixe)</option>
+          <option value="nicho">Nicho Aberto</option>
         </select>
       </div>
     </div>
 
-    <div class="section-title">3. Custos & Margem de Lucro</div>
+    <div class="section-title">Valores & Orçamento do Ambiente</div>
     <div class="grid-inputs-3">
       <div class="form-group">
         <label>MDF/m² (R$)</label>
-        <input type="number" id="custoM2" value="130" oninput="calcularTotal()">
+        <input type="number" id="custoM2" value="130" oninput="calcularTotalAmbiente()">
       </div>
       <div class="form-group">
-        <label>Ferragens (R$)</label>
-        <input type="number" id="custoFerragens" value="150" oninput="calcularTotal()">
+        <label>Ferragens/Mód (R$)</label>
+        <input type="number" id="custoFerragens" value="120" oninput="calcularTotalAmbiente()">
       </div>
       <div class="form-group">
         <label>Markup (%)</label>
-        <input type="number" id="markup" value="65" oninput="calcularTotal()">
+        <input type="number" id="markup" value="70" oninput="calcularTotalAmbiente()">
       </div>
     </div>
 
     <div class="summary-card">
       <div class="breakdown-row">
-        <span>Consumo Estimado MDF:</span>
-        <strong id="areaM2">0.00 m²</strong>
+        <span>Área Total de Chapa:</span>
+        <strong id="areaM2Total">0.00 m²</strong>
       </div>
       <div class="breakdown-row">
-        <span>Custo Total de Produção:</span>
-        <strong id="custoProducao">R$ 0,00</strong>
+        <span>Módulos no Projeto:</span>
+        <strong id="qtdModulosText">0</strong>
       </div>
       <div class="total-row">
         <div>
-          <span style="font-size: 11px; color: #94a3b8; display: block;">VALOR FINAL SUGERIDO</span>
+          <span style="font-size: 10px; color: #94a3b8; display: block;">ORÇAMENTO TOTAL DO PROJETO</span>
           <div class="price-tag" id="resValor">R$ 0,00</div>
         </div>
       </div>
     </div>
 
-    <button class="btn-primary" onclick="salvarOrcamento()">Salvar Projeto no Banco de Dados</button>
+    <button class="btn-secondary" onclick="abrirModalPlanoCorte()">📋 Gerar Lista de Peças / Plano de Corte</button>
+    <button class="btn-primary" onclick="salvarOrcamento()">💾 Salvar Projeto no Banco de Dados</button>
+  </div>
+
+  <!-- Modal Plano de Corte -->
+  <div id="modalCorte" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 style="color:#38bdf8;">Lista de Peças p/ Central de Corte</h3>
+        <button onclick="fecharModalPlanoCorte()" style="background:none; border:none; color:#fff; font-size:18px; cursor:pointer;">✕</button>
+      </div>
+      <p style="font-size: 11px; color: #94a3b8;">Relação de chapas calculadas para furação e fitamento de bordo:</p>
+      <table id="tabelaPecas">
+        <thead>
+          <tr>
+            <th>Módulo</th>
+            <th>Peça</th>
+            <th>Comp. (cm)</th>
+            <th>Larg. (cm)</th>
+            <th>Qtd</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </div>
 
   <script>
     const API_URL = 'https://orcamoveis-backend.onrender.com';
 
-    let scene, camera, renderer, controls, moduloGroup;
-    let partesMoveis = []; // Guardará portas/gavetas para animar
+    let scene, camera, renderer, controls;
+    let listaModulos = [];
+    let moduloSelecionadoIndex = -1;
     let estaAberto = false;
+    let visao2D = false;
 
     function init3D() {
       const container = document.getElementById('canvas-container');
       
       scene = new THREE.Scene();
-      camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-      camera.position.set(130, 110, 200);
+      scene.background = new THREE.Color(0x0b0f19);
+
+      camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 2000);
+      camera.position.set(180, 160, 280);
 
       renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(container.clientWidth, container.clientHeight);
@@ -189,32 +216,31 @@
       controls = new THREE.OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
 
-      // Iluminação Profissional
-      scene.add(new THREE.AmbientLight(0xffffff, 0.65));
-      
-      const mainLight = new THREE.DirectionalLight(0xffffff, 0.8);
-      mainLight.position.set(120, 180, 100);
-      mainLight.castShadow = true;
-      scene.add(mainLight);
+      // Luzes do Ambiente
+      scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      dirLight.position.set(200, 300, 200);
+      dirLight.castShadow = true;
+      scene.add(dirLight);
 
-      const fillLight = new THREE.DirectionalLight(0x38bdf8, 0.3);
-      fillLight.position.set(-100, -50, -100);
-      scene.add(fillLight);
+      // Parede de Fundo e Piso (Cenário)
+      const matParede = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.9 });
+      const parede = new THREE.Mesh(new THREE.PlaneGeometry(800, 400), matParede);
+      parede.position.set(0, 120, -100);
+      scene.add(parede);
 
-      // Chão Studio
-      const gridHelper = new THREE.GridHelper(300, 20, 0x334155, 0x1e293b);
-      gridHelper.position.y = -80;
+      const gridHelper = new THREE.GridHelper(800, 40, 0x334155, 0x1e293b);
+      gridHelper.position.set(0, -80, 300);
       scene.add(gridHelper);
 
-      moduloGroup = new THREE.Group();
-      scene.add(moduloGroup);
+      // Adiciona primeiro módulo padrão
+      adicionarModulo('balcao');
 
       window.addEventListener('resize', onWindowResize);
-      atualizarModelo3D();
       animate();
     }
 
-    function animate(time) {
+    function animate() {
       requestAnimationFrame(animate);
       TWEEN.update();
       controls.update();
@@ -228,243 +254,211 @@
       renderer.setSize(container.clientWidth, container.clientHeight);
     }
 
-    // Criador de peças padrão de MDF com contornos finos
-    function criarChapaMDF(w, h, d, colorHex, roughness = 0.6) {
+    // Estrutura de criação de chapa
+    function criarChapa(w, h, d, colorHex) {
       const group = new THREE.Group();
       const geom = new THREE.BoxGeometry(w, h, d);
-      const mat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: roughness });
+      const mat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.5 });
       const mesh = new THREE.Mesh(geom, mat);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       group.add(mesh);
 
-      const edges = new THREE.EdgesGeometry(geom);
-      const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, opacity: 0.15, transparent: true }));
+      const line = new THREE.LineSegments(new THREE.EdgesGeometry(geom), new THREE.LineBasicMaterial({ color: 0x000000, opacity: 0.2, transparent: true }));
       group.add(line);
 
-      return { group, mesh };
+      return group;
     }
 
-    function atualizarModelo3D() {
-      const w = parseFloat(document.getElementById('largura').value) || 80;
-      const h = parseFloat(document.getElementById('altura').value) || 75;
-      const d = parseFloat(document.getElementById('profundidade').value) || 50;
-      const corHex = document.getElementById('corMDF').value;
-      const numPrateleiras = parseInt(document.getElementById('numPrateleiras').value);
-      const tipoFrente = document.getElementById('tipoFrente').value;
-      const tipoTampo = document.getElementById('tipoTampo').value;
+    // Adiciona novo módulo ao cenário
+    function adicionarModulo(tipo) {
+      const id = Date.now();
+      let config = {
+        id,
+        tipo,
+        w: tipo === 'torre' ? 60 : 80,
+        h: tipo === 'aereo' ? 70 : (tipo === 'torre' ? 210 : 75),
+        d: tipo === 'aereo' ? 35 : 50,
+        posX: (listaModulos.length * 85) - 100,
+        posY: tipo === 'aereo' ? 140 : 0,
+        corHex: '#d4a373',
+        tipoFrente: tipo === 'torre' ? 'portas2' : 'portas2',
+        group: new THREE.Group(),
+        partesMoveis: []
+      };
 
-      partesMoveis = [];
-      estaAberto = false;
+      scene.add(config.group);
+      listaModulos.push(config);
+      moduloSelecionadoIndex = listaModulos.length - 1;
 
-      while(moduloGroup.children.length > 0) { 
-        moduloGroup.remove(moduloGroup.children[0]); 
+      renderizarModulo(config);
+      carregarFormularioModulo(config);
+      calcularTotalAmbiente();
+    }
+
+    // Renderiza o módulo em 3D
+    function renderizarModulo(m) {
+      while(m.group.children.length > 0) { m.group.remove(m.group.children[0]); }
+      m.partesMoveis = [];
+
+      const e = 1.5;
+      const { w, h, d, corHex, posX, posY, tipoFrente } = m;
+
+      // 1. Caixa
+      const latE = criarChapa(e, h, d, corHex); latE.position.set(-w/2 + e/2, 0, 0); m.group.add(latE);
+      const latD = criarChapa(e, h, d, corHex); latD.position.set(w/2 - e/2, 0, 0); m.group.add(latD);
+      const base = criarChapa(w - 2*e, e, d, corHex); base.position.set(0, -h/2 + e/2, 0); m.group.add(base);
+      const fundo = criarChapa(w - 0.4, h - 0.4, 0.6, 0xffffff); fundo.position.set(0, 0, -d/2 + 0.3); m.group.add(fundo);
+
+      // 2. Frentes
+      const zF = d/2 + e/2 + 0.1;
+      const matPux = new THREE.MeshStandardMaterial({ color: 0xd1d5db, metalness: 0.8 });
+
+      if (tipoFrente === 'portas2') {
+        const lP = (w - 0.6) / 2;
+        // Esquerda
+        const gE = new THREE.Group(); gE.position.set(-w/2, 0, d/2);
+        const fE = criarChapa(lP, h - 0.4, e, corHex); fE.position.set(lP/2, 0, e/2);
+        const pxE = new THREE.Mesh(new THREE.BoxGeometry(1, 10, 1.5), matPux); pxE.position.set(lP - 2, 0, e + 0.5); fE.add(pxE);
+        gE.add(fE); m.group.add(gE);
+        m.partesMoveis.push({ obj: gE, tipo: 'rot', ang: -Math.PI/2.2 });
+
+        // Direita
+        const gD = new THREE.Group(); gD.position.set(w/2, 0, d/2);
+        const fD = criarChapa(lP, h - 0.4, e, corHex); fD.position.set(-lP/2, 0, e/2);
+        const pxD = new THREE.Mesh(new THREE.BoxGeometry(1, 10, 1.5), matPux); pxD.position.set(-lP + 2, 0, e + 0.5); fD.add(pxD);
+        gD.add(fD); m.group.add(gD);
+        m.partesMoveis.push({ obj: gD, tipo: 'rot', ang: Math.PI/2.2 });
       }
 
-      const e = 1.5; // Espessura do MDF 15mm em cm
+      // Posiciona no Cenário
+      m.group.position.set(posX, posY + h/2 - 80, -100 + d/2);
+    }
 
-      // 1. LATERAIS
-      const latEsq = criarChapaMDF(e, h, d, corHex);
-      latEsq.group.position.set(-w/2 + e/2, 0, 0);
-      moduloGroup.add(latEsq.group);
+    function atualizarModuloSelecionado() {
+      if (moduloSelecionadoIndex < 0) return;
+      let m = listaModulos[moduloSelecionadoIndex];
 
-      const latDir = criarChapaMDF(e, h, d, corHex);
-      latDir.group.position.set(w/2 - e/2, 0, 0);
-      moduloGroup.add(latDir.group);
+      m.w = parseFloat(document.getElementById('largura').value) || 80;
+      m.h = parseFloat(document.getElementById('altura').value) || 75;
+      m.d = parseFloat(document.getElementById('profundidade').value) || 50;
+      m.posX = parseFloat(document.getElementById('posX').value) || 0;
+      m.posY = parseFloat(document.getElementById('posY').value) || 0;
+      m.corHex = document.getElementById('corMDF').value;
+      m.tipoFrente = document.getElementById('tipoFrente').value;
 
-      // 2. BASE (Fundo Inferior)
-      const base = criarChapaMDF(w - 2*e, e, d, corHex);
-      base.group.position.set(0, -h/2 + e/2, 0);
-      moduloGroup.add(base.group);
+      renderizarModulo(m);
+      calcularTotalAmbiente();
+    }
 
-      // 3. FUNDO TRASEIRO (Branco TX)
-      const fundo = criarChapaMDF(w - 0.4, h - 0.4, 0.6, 0xffffff);
-      fundo.group.position.set(0, 0, -d/2 + 0.3);
-      moduloGroup.add(fundo.group);
+    function carregarFormularioModulo(m) {
+      document.getElementById('largura').value = m.w;
+      document.getElementById('altura').value = m.h;
+      document.getElementById('profundidade').value = m.d;
+      document.getElementById('posX').value = m.posX;
+      document.getElementById('posY').value = m.posY;
+      document.getElementById('corMDF').value = m.corHex;
+      document.getElementById('tipoFrente').value = m.tipoFrente;
+    }
 
-      // 4. PRATELEIRAS INTERNAS
-      if (numPrateleiras > 0) {
-        const espacoUtil = h - (2*e);
-        const passo = espacoUtil / (numPrateleiras + 1);
-        for (let i = 1; i <= numPrateleiras; i++) {
-          const prat = criarChapaMDF(w - 2*e, e, d - 2, corHex);
-          prat.group.position.set(0, -h/2 + e + (i * passo), 1);
-          moduloGroup.add(prat.group);
-        }
-      }
+    function removerModuloSelecionado() {
+      if (moduloSelecionadoIndex < 0) return;
+      scene.remove(listaModulos[moduloSelecionadoIndex].group);
+      listaModulos.splice(moduloSelecionadoIndex, 1);
+      moduloSelecionadoIndex = listaModulos.length - 1;
+      if (moduloSelecionadoIndex >= 0) carregarFormularioModulo(listaModulos[moduloSelecionadoIndex]);
+      calcularTotalAmbiente();
+    }
 
-      // 5. TAMPO / BANCADA
-      if (tipoTampo === 'mdf') {
-        const tampo = criarChapaMDF(w + 2, 3, d + 2, corHex);
-        tampo.group.position.set(0, h/2 + 1.5, 1);
-        moduloGroup.add(tampo.group);
-      } else if (tipoTampo === 'marmore') {
-        const tampoMarmore = criarChapaMDF(w + 4, 3, d + 4, 0x111827, 0.1);
-        tampoMarmore.group.position.set(0, h/2 + 1.5, 2);
-        moduloGroup.add(tampoMarmore.group);
+    function toggleVisao2D() {
+      visao2D = !visao2D;
+      if (visao2D) {
+        camera.position.set(0, 500, 0);
+        controls.target.set(0, 0, 0);
       } else {
-        // Sarrafos Superiores de travamento
-        const sarrafoF = criarChapaMDF(w - 2*e, e, 7, corHex);
-        sarrafoF.group.position.set(0, h/2 - e/2, d/2 - 3.5);
-        moduloGroup.add(sarrafoF.group);
+        camera.position.set(180, 160, 280);
       }
-
-      // 6. PÉS METÁLICOS DA BASE
-      const matPe = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.8 });
-      const posPes = [[-w/2 + 4, -d/2 + 4], [w/2 - 4, -d/2 + 4], [-w/2 + 4, d/2 - 4], [w/2 - 4, d/2 - 4]];
-      posPes.forEach(p => {
-        const pe = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1, 6, 16), matPe);
-        pe.position.set(p[0], -h/2 - 3, p[1]);
-        moduloGroup.add(pe);
-      });
-
-      // 7. FRENTES (PORTAS / GAVETAS)
-      const zFrente = d/2 + e/2 + 0.1;
-      const matPuxador = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.9, roughness: 0.1 });
-
-      if (tipoFrente === 'porta1') {
-        const portaGroup = new THREE.Group();
-        portaGroup.position.set(-w/2, 0, d/2); // Pivô na dobradiça esquerda
-        
-        const folha = criarChapaMDF(w - 0.4, h - 0.4, e, corHex);
-        folha.group.position.set(w/2, 0, e/2);
-        
-        // Puxador
-        const pux = new THREE.Mesh(new THREE.BoxGeometry(1.2, 12, 1.5), matPuxador);
-        pux.position.set(w - 4, 0, e + 0.7);
-        folha.group.add(pux);
-
-        portaGroup.add(folha.group);
-        moduloGroup.add(portaGroup);
-
-        partesMoveis.push({ obj: portaGroup, tipo: 'rotacao', angulo: -Math.PI / 2, orign: 0 });
-
-      } else if (tipoFrente === 'portas2') {
-        const largP = (w - 0.6) / 2;
-
-        // Porta Esquerda
-        const pEsqGroup = new THREE.Group();
-        pEsqGroup.position.set(-w/2, 0, d/2);
-        const folhaEsq = criarChapaMDF(largP, h - 0.4, e, corHex);
-        folhaEsq.group.position.set(largP/2, 0, e/2);
-        const puxE = new THREE.Mesh(new THREE.BoxGeometry(1.2, 12, 1.5), matPuxador);
-        puxE.position.set(largP - 3, 0, e + 0.7);
-        folhaEsq.group.add(puxE);
-        pEsqGroup.add(folhaEsq.group);
-        moduloGroup.add(pEsqGroup);
-
-        // Porta Direita
-        const pDirGroup = new THREE.Group();
-        pDirGroup.position.set(w/2, 0, d/2);
-        const folhaDir = criarChapaMDF(largP, h - 0.4, e, corHex);
-        folhaDir.group.position.set(-largP/2, 0, e/2);
-        const puxD = new THREE.Mesh(new THREE.BoxGeometry(1.2, 12, 1.5), matPuxador);
-        puxD.position.set(-largP + 3, 0, e + 0.7);
-        folhaDir.group.add(puxD);
-        pDirGroup.add(folhaDir.group);
-        moduloGroup.add(pDirGroup);
-
-        partesMoveis.push({ obj: pEsqGroup, tipo: 'rotacao', angulo: -Math.PI / 2.2, orign: 0 });
-        partesMoveis.push({ obj: pDirGroup, tipo: 'rotacao', angulo: Math.PI / 2.2, orign: 0 });
-
-      } else if (tipoFrente.startsWith('gavetas')) {
-        const numG = parseInt(tipoFrente.replace('gavetas', ''));
-        const altG = (h - (numG * 0.4)) / numG;
-        const yInicial = h/2 - altG/2 - 0.2;
-
-        for (let i = 0; i < numG; i++) {
-          const gavGroup = new THREE.Group();
-          const yPos = yInicial - (i * (altG + 0.4));
-          gavGroup.position.set(0, yPos, zFrente);
-
-          // Frente da Gaveta
-          const frenteG = criarChapaMDF(w - 0.4, altG, e, corHex);
-          gavGroup.add(frenteG.group);
-
-          // Puxador Profilado
-          const puxG = new THREE.Mesh(new THREE.BoxGeometry(w * 0.4, 1.2, 1.5), matPuxador);
-          puxG.position.set(0, 0, e/2 + 0.7);
-          gavGroup.add(puxG);
-
-          moduloGroup.add(gavGroup);
-          partesMoveis.push({ obj: gavGroup, tipo: 'translacao', dist: d * 0.65, orign: zFrente });
-        }
-      }
-
-      moduloGroup.position.y = -h/2 + 35;
-      calcularTotal();
     }
 
-    // Animação de Abrir/Fechar Portas e Gavetas
     function toggleAbrirMoveis() {
       estaAberto = !estaAberto;
-
-      partesMoveis.forEach(item => {
-        if (item.tipo === 'rotacao') {
-          const alvo = estaAberto ? item.angulo : item.orign;
-          new TWEEN.Tween(item.obj.rotation)
-            .to({ y: alvo }, 800)
-            .easing(TWEEN.Easing.Cubic.Out)
-            .start();
-        } else if (item.tipo === 'translacao') {
-          const alvo = estaAberto ? item.orign + item.dist : item.orign;
-          new TWEEN.Tween(item.obj.position)
-            .to({ z: alvo }, 800)
-            .easing(TWEEN.Easing.Cubic.Out)
-            .start();
-        }
+      listaModulos.forEach(m => {
+        m.partesMoveis.forEach(p => {
+          new TWEEN.Tween(p.obj.rotation).to({ y: estaAberto ? p.ang : 0 }, 600).start();
+        });
       });
     }
 
-    // Cálculo detalhado dos custos
-    function calcularTotal() {
-      const w = (parseFloat(document.getElementById('largura').value) || 0) / 100;
-      const h = (parseFloat(document.getElementById('altura').value) || 0) / 100;
-      const d = (parseFloat(document.getElementById('profundidade').value) || 0) / 100;
-      
+    function calcularTotalAmbiente() {
+      let areaTotalM2 = 0;
       const custoM2 = parseFloat(document.getElementById('custoM2').value) || 0;
       const custoFerragens = parseFloat(document.getElementById('custoFerragens').value) || 0;
       const markup = parseFloat(document.getElementById('markup').value) || 0;
 
-      // Cálculo Real de Consumo de MDF (Caixa + Frentes + Fundo + Prateleiras)
-      const areaCaixa = (2 * (h * d)) + (2 * (w * d)) + (w * h);
-      const areaPrateleiras = (parseInt(document.getElementById('numPrateleiras').value) || 0) * (w * d);
-      const areaTotalMDF = (areaCaixa + areaPrateleiras) * 1.2; // 20% de margem de corte/perda
+      listaModulos.forEach(m => {
+        const w = m.w / 100, h = m.h / 100, d = m.d / 100;
+        const areaModulo = ((2 * (h * d)) + (2 * (w * d)) + (w * h)) * 1.25;
+        areaTotalM2 += areaModulo;
+      });
 
-      const custoMDFTotal = areaTotalMDF * custoM2;
-      const custoProducaoTotal = custoMDFTotal + custoFerragens;
-      const valorFinal = custoProducaoTotal * (1 + (markup / 100));
+      const custoMaterial = (areaTotalM2 * custoM2) + (listaModulos.length * custoFerragens);
+      const valorFinal = custoMaterial * (1 + (markup / 100));
 
-      document.getElementById('areaM2').innerText = `${areaTotalMDF.toFixed(2)} m²`;
-      document.getElementById('custoProducao').innerText = `R$ ${custoProducaoTotal.toFixed(2)}`;
+      document.getElementById('areaM2Total').innerText = `${areaTotalM2.toFixed(2)} m²`;
+      document.getElementById('qtdModulosText').innerText = listaModulos.length;
       document.getElementById('resValor').innerText = `R$ ${valorFinal.toFixed(2)}`;
+      document.getElementById('infoMódulo').innerText = `Módulos na cena: ${listaModulos.length}`;
 
-      return { custoProducaoTotal, markup, valorFinal };
+      return { custoMaterial, valorFinal };
+    }
+
+    function abrirModalPlanoCorte() {
+      const tbody = document.querySelector('#tabelaPecas tbody');
+      tbody.innerHTML = '';
+
+      listaModulos.forEach((m, idx) => {
+        const pecas = [
+          { nome: 'Lateral', c: m.h, l: m.d, q: 2 },
+          { nome: 'Base / Tampo', c: m.w - 3, l: m.d, q: 2 },
+          { nome: 'Fundo Traseiro', c: m.h - 0.4, l: m.w - 0.4, q: 1 },
+          { nome: 'Porta / Frente', c: m.h - 0.4, l: (m.w - 0.6) / 2, q: 2 }
+        ];
+
+        pecas.forEach(p => {
+          tbody.innerHTML += `
+            <tr>
+              <td>Módulo #${idx + 1} (${m.tipo})</td>
+              <td>${p.nome}</td>
+              <td>${p.c} cm</td>
+              <td>${p.l} cm</td>
+              <td>${p.q}</td>
+            </tr>
+          `;
+        });
+      });
+
+      document.getElementById('modalCorte').style.display = 'flex';
+    }
+
+    function fecharModalPlanoCorte() {
+      document.getElementById('modalCorte').style.display = 'none';
     }
 
     async function salvarOrcamento() {
       const cliente = document.getElementById('cliente').value;
-      if (!cliente) {
-        alert('Informe o nome do cliente antes de salvar!');
-        return;
-      }
+      if (!cliente) { alert('Digite o nome do cliente!'); return; }
 
-      const { custoProducaoTotal, markup, valorFinal } = calcularTotal();
+      const { custoMaterial, valorFinal } = calcularTotalAmbiente();
 
       try {
         const res = await fetch(`${API_URL}/api/orcamento`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cliente, custo: custoProducaoTotal, markup })
+          body: JSON.stringify({ cliente, custo: custoMaterial, markup: 70 })
         });
-        
-        if (res.ok) {
-          alert('✅ Projeto 3D e orçamento salvos no banco de dados!');
-        } else {
-          alert('Erro ao comunicar com o servidor.');
-        }
+        if (res.ok) alert('✅ Projeto do ambiente e lista salvos com sucesso!');
       } catch (e) {
-        alert(`Orçamento calculado: R$ ${valorFinal.toFixed(2)} (Salvo Localmente)`);
+        alert(`Projeto calculado: R$ ${valorFinal.toFixed(2)} (Salvo Off-line)`);
       }
     }
 
