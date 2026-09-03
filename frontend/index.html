@@ -3,551 +3,471 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>OrçaMóveis 3D - Promob Web Studio Pro</title>
-  <link rel="manifest" href="manifest.json">
+  <title>Cortecloud Engine - Otimizador de Plano de Corte & Fita de Bordo</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background: #0b0f19; color: #f8fafc; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background: #0b0f19; color: #f8fafc; min-height: 100vh; display: flex; flex-direction: column; }
 
-    /* Barra Superior Responsiva */
-    .top-bar { height: 48px; background: #0f172a; border-bottom: 1px solid #334155; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; gap: 8px; shrink: 0; }
-    .brand { font-weight: 800; color: #38bdf8; font-size: 13px; white-space: nowrap; }
-    .top-tools { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
-    .top-tools::-webkit-scrollbar { display: none; }
+    /* Topbar */
+    .header { background: #0f172a; border-bottom: 1px solid #334155; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .brand { font-size: 16px; font-weight: 800; color: #38bdf8; display: flex; align-items: center; gap: 8px; }
+    .brand span { color: #4ade80; font-size: 12px; background: rgba(74, 222, 128, 0.1); padding: 2px 6px; border-radius: 4px; }
 
-    /* Layout Principal Desktop vs Mobile */
-    .app-workspace { display: flex; flex: 1; height: calc(100vh - 48px); overflow: hidden; flex-direction: row; }
+    /* Main Container */
+    .main-layout { display: grid; grid-template-columns: 380px 1fr; flex: 1; overflow: hidden; height: calc(100vh - 49px); }
     
-    /* Viewport 3D */
-    .viewport-container { flex: 1; position: relative; background: radial-gradient(circle at center, #1e293b 0%, #0b0f19 100%); min-height: 250px; }
-    #canvas-3d { width: 100%; height: 100%; display: block; }
+    /* Painel Esquerdo: Entrada de Dados */
+    .sidebar { background: #0f172a; border-right: 1px solid #334155; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
     
-    .cota-overlay { position: absolute; pointer-events: none; top: 0; left: 0; width: 100%; height: 100%; }
-    .cota-label { position: absolute; background: rgba(56, 189, 248, 0.95); color: #000; font-weight: 800; font-size: 10px; padding: 2px 6px; border-radius: 4px; transform: translate(-50%, -50%); box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+    /* Painel Direito: Canvas e Resultados */
+    .workspace { padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; background: #0b0f19; }
 
-    /* Painéis Laterais */
-    .panel-left, .panel-right { background: #0f172a; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-    .panel-left { width: 250px; border-right: 1px solid #334155; }
-    .panel-right { width: 280px; border-left: 1px solid #334155; }
+    /* UI Cards e Form */
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 12px; }
+    .card-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #38bdf8; font-weight: 700; margin-bottom: 10px; border-bottom: 1px solid #334155; padding-bottom: 4px; }
 
-    /* Navegação por Abas no Mobile */
-    .mobile-tabs { display: none; background: #0f172a; border-top: 1px solid #334155; height: 50px; flex-shrink: 0; }
-    .tab-btn { flex: 1; background: none; border: none; color: #64748b; font-size: 11px; font-weight: 700; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer; }
-    .tab-btn.active { color: #38bdf8; border-top: 2px solid #38bdf8; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px; }
+    
+    .form-group { margin-bottom: 8px; }
+    label { display: block; font-size: 10px; color: #94a3b8; font-weight: 600; margin-bottom: 3px; }
+    input, select { width: 100%; padding: 7px; background: #0f172a; border: 1px solid #334155; border-radius: 5px; color: #fff; font-size: 11px; outline: none; }
+    input:focus, select:focus { border-color: #38bdf8; }
 
-    /* Utilitários UI */
-    .section-header { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #38bdf8; font-weight: bold; border-bottom: 1px solid #1e293b; padding-bottom: 4px; margin-bottom: 6px; }
-    .btn { background: #1e293b; color: #f8fafc; border: 1px solid #475569; padding: 8px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 4px; white-space: nowrap; }
-    .btn:hover, .btn:active { background: #0284c7; color: #fff; border-color: #38bdf8; }
-    .btn-action { background: #0284c7; text-align: center; justify-content: center; font-weight: 700; margin-top: 6px; }
+    /* Botões */
+    .btn { background: #0284c7; color: #fff; border: none; padding: 9px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; transition: 0.2s; width: 100%; display: flex; justify-content: center; align-items: center; gap: 6px; }
+    .btn:hover { background: #0369a1; }
+    .btn-success { background: #16a34a; }
+    .btn-success:hover { background: #15803d; }
+    .btn-danger { background: #dc2626; padding: 4px 8px; font-size: 10px; }
 
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
-    .form-group { margin-bottom: 6px; }
-    label { display: block; font-size: 10px; color: #94a3b8; margin-bottom: 2px; font-weight: 600; }
-    input, select { width: 100%; padding: 7px; background: #1e293b; border: 1px solid #334155; border-radius: 5px; color: #fff; font-size: 11px; outline: none; }
+    /* Tabela de Peças */
+    .table-container { max-height: 220px; overflow-y: auto; border: 1px solid #334155; border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: left; }
+    th, td { padding: 6px 8px; border-bottom: 1px solid #1e293b; }
+    th { background: #0f172a; color: #94a3b8; font-size: 10px; font-weight: 700; position: sticky; top: 0; }
 
-    .price-card { background: #1e293b; border: 1px solid #0284c7; border-radius: 8px; padding: 10px; margin-top: auto; }
-    .price-val { font-size: 20px; font-weight: 800; color: #4ade80; margin-top: 4px; }
+    /* Dashboard de Resultados */
+    .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+    .stat-box { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 10px; }
+    .stat-lbl { font-size: 10px; color: #94a3b8; font-weight: 600; }
+    .stat-val { font-size: 18px; font-weight: 800; color: #38bdf8; margin-top: 2px; }
 
-    /* Modais */
-    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 999; padding: 14px; justify-content: center; align-items: center; }
-    .modal-box { background: #1e293b; border: 1px solid #475569; border-radius: 8px; width: 100%; max-width: 650px; max-height: 85vh; overflow-y: auto; padding: 14px; }
-    table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 8px; }
-    th, td { border: 1px solid #334155; padding: 6px; text-align: left; }
-    th { background: #0f172a; color: #38bdf8; }
+    /* Canvas de Otimização */
+    .sheet-viewer { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .sheet-controls { display: flex; gap: 10px; align-items: center; width: 100%; justify-content: space-between; }
+    canvas { background: #0b0f19; border: 1px solid #475569; border-radius: 4px; max-width: 100%; height: auto; }
 
-    /* MEDIA QUERY PARA DISPOSITIVOS MÓVEIS (CELULARES) */
-    @media (max-width: 768px) {
-      .app-workspace { flex-direction: column; }
-      .viewport-container { height: 42vh; flex: none; }
-      
-      .panel-left, .panel-right { width: 100%; flex: 1; border: none; display: none; height: calc(58vh - 98px); overflow-y: auto; }
-      .panel-left.active-tab, .panel-right.active-tab { display: flex; }
-      
-      .mobile-tabs { display: flex; }
-      .brand span { display: none; }
+    .edge-legend { display: flex; gap: 12px; font-size: 11px; align-items: center; }
+    .dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+
+    @media (max-width: 900px) {
+      .main-layout { grid-template-columns: 1fr; height: auto; overflow: visible; }
+      body { overflow: auto; }
     }
   </style>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
 </head>
 <body>
 
-  <!-- Barra Superior -->
-  <div class="top-bar">
-    <div class="brand">📐 Promob Web <span>| Studio Pro</span></div>
-    <div class="top-tools">
-      <button class="btn" style="width: auto;" onclick="toggleVisao2D()">📐 2D/3D</button>
-      <button class="btn" style="width: auto;" onclick="toggleAbrirMoveis()">🚪 Abrir</button>
-      <button class="btn" style="width: auto;" onclick="toggleCotas()">📏 Cotas</button>
-    </div>
+  <div class="header">
+    <div class="brand">⚡ Cortecloud Engine <span>v2.0 Pro</span></div>
+    <div style="font-size: 11px; color: #94a3b8;">Central de Corte e Fita de Bordo</div>
   </div>
 
-  <div class="app-workspace">
+  <div class="main-layout">
     
-    <!-- Viewport 3D -->
-    <div class="viewport-container" id="viewport">
-      <canvas id="canvas-3d"></canvas>
-      <div class="cota-overlay" id="cotaOverlay"></div>
-    </div>
-
-    <!-- Aba 1: Painel de Catálogo & Layout -->
-    <div class="panel-left active-tab" id="tabCatalog">
-      <div>
-        <div class="section-header">1. Layout do Cômodo</div>
-        <div class="form-group">
-          <label>Formato da Parede</label>
-          <select id="formatoParede" onchange="construirAmbiente()">
-            <option value="reta">Parede Reta (I)</option>
-            <option value="L">Cozinha em L</option>
-            <option value="U">Cozinha em U</option>
-          </select>
-        </div>
-      </div>
-
-      <div>
-        <div class="section-header">2. Inserir Módulos</div>
+    <!-- Painel Lateral: Form e Peças -->
+    <div class="sidebar">
+      
+      <!-- Card Configuração de Chapa -->
+      <div class="card">
+        <div class="card-title">1. Configuração do MDF & Lâmina</div>
         <div class="grid-2">
-          <button class="btn" onclick="adicionarModulo('balcao')">📦 Balcão</button>
-          <button class="btn" onclick="adicionarModulo('aereo')">🗄️ Aéreo</button>
-          <button class="btn" onclick="adicionarModulo('torre')">🏢 Torre</button>
-          <button class="btn" onclick="adicionarModulo('bancada')">🪵 Tampo</button>
+          <div class="form-group"><label>Comprimento (mm)</label><input type="number" id="chapaW" value="2750"></div>
+          <div class="form-group"><label>Largura (mm)</label><input type="number" id="chapaH" value="1850"></div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group"><label>Corte da Serra (Kerf mm)</label><input type="number" id="kerf" value="4"></div>
+          <div class="form-group"><label>Refilo de Borda (mm)</label><input type="number" id="refilo" value="10"></div>
         </div>
       </div>
 
-      <div>
-        <div class="section-header">3. Módulos no Projeto</div>
-        <div id="listaModulosTree" style="display: flex; flex-direction: column; gap: 4px;"></div>
-      </div>
-    </div>
-
-    <!-- Aba 2: Propriedades do Módulo & Valores -->
-    <div class="panel-right" id="tabProps">
-      <div class="section-header">Propriedades do Item</div>
-      
-      <div class="grid-3">
-        <div class="form-group"><label>Larg (cm)</label><input type="number" id="propW" oninput="atualizarItem()"></div>
-        <div class="form-group"><label>Alt (cm)</label><input type="number" id="propH" oninput="atualizarItem()"></div>
-        <div class="form-group"><label>Prof (cm)</label><input type="number" id="propD" oninput="atualizarItem()"></div>
-      </div>
-
-      <div class="grid-2">
-        <div class="form-group"><label>Posição X</label><input type="number" id="propX" step="5" oninput="atualizarItem()"></div>
-        <div class="form-group"><label>Altura Y</label><input type="number" id="propY" step="5" oninput="atualizarItem()"></div>
-      </div>
-
-      <button class="btn" onclick="encaixarProximo()" style="background: #0369a1; border-color: #38bdf8; justify-content: center;">🧲 Encaixar Automático (Snap)</button>
-
-      <div class="section-header" style="margin-top: 6px;">Acabamento & Estilo</div>
-      
-      <div class="form-group">
-        <label>Padrão MDF</label>
-        <select id="propCor" onchange="atualizarItem()">
-          <option value="#d4a373">Freijó Purus (Arauco)</option>
-          <option value="#5c3d2e">Louro Freijó (Duratex)</option>
-          <option value="#334155">Gianduia Escuro</option>
-          <option value="#f8fafc">Branco Supremo TX</option>
-        </select>
-      </div>
-
-      <div class="grid-2">
+      <!-- Card Cadastro de Peças -->
+      <div class="card">
+        <div class="card-title">2. Inserir Nova Peça</div>
         <div class="form-group">
-          <label>Frentes</label>
-          <select id="propFrente" onchange="atualizarItem()">
-            <option value="portas2">2 Portas</option>
-            <option value="porta1">1 Porta</option>
-            <option value="vidro">Vidro Reflecta</option>
-          </select>
+          <label>Descrição da Peça</label>
+          <input type="text" id="pecaNome" placeholder="Ex: Lateral Esquerda Roupeiro">
         </div>
+        <div class="grid-3" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:6px;">
+          <div class="form-group"><label>Comp (mm)</label><input type="number" id="pecaW" placeholder="1800"></div>
+          <div class="form-group"><label>Larg (mm)</label><input type="number" id="pecaH" placeholder="500"></div>
+          <div class="form-group"><label>Qtd</label><input type="number" id="pecaQtd" value="1"></div>
+        </div>
+
         <div class="form-group">
-          <label>Puxador</label>
-          <select id="propPuxador" onchange="atualizarItem()">
-            <option value="gola">Perfil Gola</option>
-            <option value="cava">Cava Usinada</option>
-          </select>
+          <label>Fita de Bordo (Selecione os lados):</label>
+          <div class="grid-4" style="background:#0f172a; padding:6px; border-radius:5px; border:1px solid #334155;">
+            <label style="color:#fff;"><input type="checkbox" id="fbT"> Topo</label>
+            <label style="color:#fff;"><input type="checkbox" id="fbB"> Base</label>
+            <label style="color:#fff;"><input type="checkbox" id="fbE"> Esq</label>
+            <label style="color:#fff;"><input type="checkbox" id="fbD"> Dir</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label><input type="checkbox" id="permitirGiro" checked> 🔄 Permitir Rotacionar (Veio da Madeira)</label>
+        </div>
+
+        <button class="btn" onclick="adicionarPeca()">➕ Adicionar Peça à Lista</button>
+      </div>
+
+      <!-- Lista de Peças Cadastradas -->
+      <div class="card">
+        <div class="card-title">3. Lista de Peças (<span id="totalPecasCount">0</span>)</div>
+        <div class="table-container">
+          <table id="tabelaPecas">
+            <thead>
+              <tr>
+                <th>Descrição</th>
+                <th>Dimensões</th>
+                <th>Qtd</th>
+                <th>Fita</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <button class="btn btn-success" style="margin-top: 10px;" onclick="otimizarPlanoCorte()">⚡ GERAR PLANO DE CORTE</button>
+      </div>
+
+    </div>
+
+    <!-- Área de Trabalho: Resultados & Canvas -->
+    <div class="workspace">
+      
+      <!-- Indicadores de Produção -->
+      <div class="stats-bar">
+        <div class="stat-box">
+          <div class="stat-lbl">Chapas Necessárias</div>
+          <div class="stat-val" id="statChapas">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-lbl">Aproveitamento</div>
+          <div class="stat-val" id="statAprov" style="color:#4ade80;">0.0%</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-lbl">Sobras / Desperdício</div>
+          <div class="stat-val" id="statSobra" style="color:#f87171;">0.0%</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-lbl">Fita de Bordo Total</div>
+          <div class="stat-val" id="statFita" style="color:#facc15;">0.0 m</div>
         </div>
       </div>
 
-      <div class="form-group">
-        <label><input type="checkbox" id="propLED" onchange="atualizarItem()" style="width: auto;"> 💡 Iluminação Fita LED</label>
+      <!-- Visualizador do Plano de Corte -->
+      <div class="sheet-viewer">
+        <div class="sheet-controls">
+          <strong style="color:#38bdf8; font-size:13px;" id="sheetTitle">Plano de Corte - Chapa 1/1</strong>
+          <div class="edge-legend">
+            <span><span class="dot" style="background:#ef4444;"></span> Fita de Bordo</span>
+            <span><span class="dot" style="background:#0284c7;"></span> Peça MDF</span>
+          </div>
+          <div>
+            <button class="btn" style="width:auto; padding:4px 10px; display:inline-block;" onclick="mudarChapa(-1)">◀ Ant</button>
+            <button class="btn" style="width:auto; padding:4px 10px; display:inline-block;" onclick="mudarChapa(1)">Próx ▶</button>
+          </div>
+        </div>
+
+        <canvas id="canvasCorte" width="900" height="600"></canvas>
       </div>
 
-      <button class="btn" style="color: #f87171; border-color: #7f1d1d; justify-content: center;" onclick="excluirItem()">🗑️ Excluir Módulo</button>
-
-      <div class="price-card">
-        <div class="section-header" style="border:none; margin:0;">Resumo Financeiro</div>
-        <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">Chapa Total: <strong id="resM2" style="color:#fff;">0.00 m²</strong></div>
-        <div class="price-val" id="resTotal">R$ 0,00</div>
-      </div>
-
-      <button class="btn btn-action" onclick="abrirCutlist()">📋 Lista de Peças (Cutlist)</button>
-      <button class="btn btn-action" style="background:#16a34a;" onclick="salvarBD()">💾 Salvar Projeto</button>
     </div>
 
-  </div>
-
-  <!-- Menu de Abas Inferior (Mobile) -->
-  <div class="mobile-tabs">
-    <button class="tab-btn active" id="btnTab1" onclick="mudarAbaMobile('catalog')">
-      <span>📦</span> Módulos
-    </button>
-    <button class="tab-btn" id="btnTab2" onclick="mudarAbaMobile('props')">
-      <span>⚙️</span> Propriedades
-    </button>
-  </div>
-
-  <!-- Modal Cutlist -->
-  <div id="modalCutlist" class="modal">
-    <div class="modal-box">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h3 style="color:#38bdf8;">Lista de Peças p/ Corte</h3>
-        <button onclick="fecharCutlist()" style="background:none; border:none; color:#fff; font-size:18px; cursor:pointer;">✕</button>
-      </div>
-      <table id="tabelaCutlist">
-        <thead>
-          <tr>
-            <th>Módulo</th>
-            <th>Peça</th>
-            <th>Comp.</th>
-            <th>Larg.</th>
-            <th>Qtd</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
   </div>
 
   <script>
-    const API_URL = 'https://orcamoveis-backend.onrender.com';
+    let listaPecas = [];
+    let resultadoChapas = [];
+    let chapaAtualIndex = 0;
 
-    let scene, camera, renderer, controls;
-    let listaModulos = [];
-    let selecaoIndex = -1;
-    let mostrarCotas = true, estaAberto = false, visao2D = false;
-    let paredesGroup;
-
-    function init3D() {
-      const container = document.getElementById('viewport');
+    function adicionarPeca() {
+      const nome = document.getElementById('pecaNome').value || 'Peça sem nome';
+      const w = parseInt(document.getElementById('pecaW').value);
+      const h = parseInt(document.getElementById('pecaH').value);
+      const qtd = parseInt(document.getElementById('pecaQtd').value) || 1;
       
-      scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x0b0f19);
-
-      camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 1, 3000);
-      camera.position.set(220, 180, 320);
-
-      renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas-3d'), antialias: true });
-      renderer.setSize(container.clientWidth, container.clientHeight);
-      renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.shadowMap.enabled = true;
-
-      controls = new THREE.OrbitControls(camera, renderer.domElement);
-      controls.enableDamping = true;
-
-      scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-      const sun = new THREE.DirectionalLight(0xffffff, 0.8);
-      sun.position.set(200, 400, 300);
-      scene.add(sun);
-
-      paredesGroup = new THREE.Group();
-      scene.add(paredesGroup);
-
-      construirAmbiente();
-      adicionarModulo('balcao');
-
-      window.addEventListener('resize', onResize);
-      animate();
-    }
-
-    function animate() {
-      requestAnimationFrame(animate);
-      TWEEN.update();
-      controls.update();
-      renderer.render(scene, camera);
-      atualizarCotasOverlay();
-    }
-
-    function onResize() {
-      const container = document.getElementById('viewport');
-      camera.aspect = container.clientWidth / container.clientHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(container.clientWidth, container.clientHeight);
-    }
-
-    function mudarAbaMobile(aba) {
-      document.getElementById('tabCatalog').classList.remove('active-tab');
-      document.getElementById('tabProps').classList.remove('active-tab');
-      document.getElementById('btnTab1').classList.remove('active');
-      document.getElementById('btnTab2').classList.remove('active');
-
-      if (aba === 'catalog') {
-        document.getElementById('tabCatalog').classList.add('active-tab');
-        document.getElementById('btnTab1').classList.add('active');
-      } else {
-        document.getElementById('tabProps').classList.add('active-tab');
-        document.getElementById('btnTab2').classList.add('active');
-      }
-    }
-
-    function construirAmbiente() {
-      while(paredesGroup.children.length > 0) paredesGroup.remove(paredesGroup.children[0]);
-
-      const tipo = document.getElementById('formatoParede').value;
-      const matParede = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.9 });
-      const matPiso = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.4 });
-
-      const piso = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), matPiso);
-      piso.rotation.x = -Math.PI / 2; piso.position.y = -80;
-      paredesGroup.add(piso);
-
-      const p1 = new THREE.Mesh(new THREE.BoxGeometry(600, 300, 10), matParede);
-      p1.position.set(0, 70, -200);
-      paredesGroup.add(p1);
-
-      if (tipo === 'L' || tipo === 'U') {
-        const p2 = new THREE.Mesh(new THREE.BoxGeometry(10, 300, 400), matParede);
-        p2.position.set(-300, 70, 0);
-        paredesGroup.add(p2);
-      }
-      if (tipo === 'U') {
-        const p3 = new THREE.Mesh(new THREE.BoxGeometry(10, 300, 400), matParede);
-        p3.position.set(300, 70, 0);
-        paredesGroup.add(p3);
-      }
-    }
-
-    function adicionarModulo(tipo) {
-      const m = {
-        id: Date.now(),
-        tipo,
-        w: tipo === 'bancada' ? 160 : (tipo === 'torre' ? 60 : 80),
-        h: tipo === 'aereo' ? 70 : (tipo === 'bancada' ? 4 : (tipo === 'torre' ? 210 : 75)),
-        d: tipo === 'aereo' ? 35 : (tipo === 'bancada' ? 55 : 50),
-        x: (listaModulos.length * 85) - 100,
-        y: tipo === 'aereo' ? 140 : (tipo === 'bancada' ? 75 : 0),
-        cor: '#d4a373',
-        frente: 'portas2',
-        puxador: 'gola',
-        led: tipo === 'aereo',
-        group: new THREE.Group(),
-        partes: []
+      const fitas = {
+        top: document.getElementById('fbT').checked,
+        bottom: document.getElementById('fbB').checked,
+        left: document.getElementById('fbE').checked,
+        right: document.getElementById('fbD').checked
       };
 
-      scene.add(m.group);
-      listaModulos.push(m);
-      selecionarModulo(listaModulos.length - 1);
-      renderizarModulo(m);
-      atualizarArvoreUI();
-      calcularOrcamento();
-    }
+      const giro = document.getElementById('permitirGiro').checked;
 
-    function renderizarModulo(m) {
-      while(m.group.children.length > 0) m.group.remove(m.group.children[0]);
-      m.partes = [];
-
-      const e = 1.5;
-      const { w, h, d, cor, x, y, frente, puxador, led } = m;
-      const matMDF = new THREE.MeshStandardMaterial({ color: parseInt(cor.replace('#','0x')), roughness: 0.6 });
-
-      function criarBox(bw, bh, bd, mat) {
-        const mesh = new THREE.Mesh(new THREE.BoxGeometry(bw, bh, bd), mat || matMDF);
-        mesh.castShadow = true; mesh.receiveShadow = true;
-        return mesh;
+      if (!w || !h || w <= 0 || h <= 0) {
+        alert('Informe dimensões válidas para a peça!');
+        return;
       }
 
-      if (m.tipo !== 'bancada') {
-        const latE = criarBox(e, h, d); latE.position.set(-w/2 + e/2, 0, 0); m.group.add(latE);
-        const latD = criarBox(e, h, d); latD.position.set(w/2 - e/2, 0, 0); m.group.add(latD);
-        const base = criarBox(w - 2*e, e, d); base.position.set(0, -h/2 + e/2, 0); m.group.add(base);
-        const fundo = criarBox(w - 0.4, h - 0.4, 0.6, new THREE.MeshStandardMaterial({ color: 0xffffff })); 
-        fundo.position.set(0, 0, -d/2 + 0.3); m.group.add(fundo);
+      listaPecas.push({ id: Date.now(), nome, w, h, qtd, fitas, giro });
+      atualizarTabelaPecas();
 
-        if (led) {
-          const reguaLED = new THREE.Mesh(new THREE.BoxGeometry(w - 4, 1, 2), new THREE.MeshBasicMaterial({ color: 0xfffbeb }));
-          reguaLED.position.set(0, -h/2 - 0.5, 0); m.group.add(reguaLED);
-        }
-
-        const matVidro = new THREE.MeshPhysicalMaterial({ color: 0x1e293b, roughness: 0.1, transmission: 0.7, transparent: true });
-        const matPuxador = new THREE.MeshStandardMaterial({ color: 0xd1d5db, metalness: 0.9 });
-
-        if (frente === 'portas2' || frente === 'vidro') {
-          const lP = (w - 0.6) / 2;
-          const matFolha = frente === 'vidro' ? matVidro : matMDF;
-
-          const gE = new THREE.Group(); gE.position.set(-w/2, 0, d/2);
-          const fE = criarBox(lP, h - 0.4, e, matFolha); fE.position.set(lP/2, 0, e/2); gE.add(fE);
-          if (puxador === 'gola') {
-            const px = criarBox(lP, 1.5, 1.5, matPuxador); px.position.set(lP/2, h/2 - 1, e + 0.5); gE.add(px);
-          }
-          m.group.add(gE); m.partes.push({ obj: gE, rot: -Math.PI/2.2 });
-
-          const gD = new THREE.Group(); gD.position.set(w/2, 0, d/2);
-          const fD = criarBox(lP, h - 0.4, e, matFolha); fD.position.set(-lP/2, 0, e/2); gD.add(fD);
-          if (puxador === 'gola') {
-            const px = criarBox(lP, 1.5, 1.5, matPuxador); px.position.set(-lP/2, h/2 - 1, e + 0.5); gD.add(px);
-          }
-          m.group.add(gD); m.partes.push({ obj: gD, rot: Math.PI/2.2 });
-        }
-      } else {
-        const tampo = criarBox(w, h, d, new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.2 }));
-        m.group.add(tampo);
-      }
-
-      m.group.position.set(x, y + h/2 - 80, -200 + d/2 + 10);
+      // Limpar campos
+      document.getElementById('pecaNome').value = '';
+      document.getElementById('pecaW').value = '';
+      document.getElementById('pecaH').value = '';
+      document.getElementById('pecaQtd').value = '1';
     }
 
-    function encaixarProximo() {
-      if (selecaoIndex <= 0) return;
-      const mAtual = listaModulos[selecaoIndex];
-      const mAnterior = listaModulos[selecaoIndex - 1];
-      mAtual.x = mAnterior.x + (mAnterior.w / 2) + (mAtual.w / 2);
-      mAtual.y = mAnterior.y;
-      document.getElementById('propX').value = mAtual.x;
-      document.getElementById('propY').value = mAtual.y;
-      renderizarModulo(mAtual);
+    function removerPeca(id) {
+      listaPecas = listaPecas.filter(p => p.id !== id);
+      atualizarTabelaPecas();
     }
 
-    function atualizarCotasOverlay() {
-      const overlay = document.getElementById('cotaOverlay');
-      overlay.innerHTML = '';
-      if (!mostrarCotas || selecaoIndex < 0) return;
-
-      const m = listaModulos[selecaoIndex];
-      const posScreen = m.group.position.clone().project(camera);
-      const x = (posScreen.x * .5 + .5) * overlay.clientWidth;
-      const y = (-(posScreen.y * .5) + .5) * overlay.clientHeight;
-
-      const label = document.createElement('div');
-      label.className = 'cota-label';
-      label.style.left = `${x}px`;
-      label.style.top = `${y - 30}px`;
-      label.innerText = `${m.w}x${m.h}cm`;
-      overlay.appendChild(label);
-    }
-
-    function selecionarModulo(idx) {
-      selecaoIndex = idx;
-      if (idx < 0) return;
-      const m = listaModulos[idx];
-
-      document.getElementById('propW').value = m.w;
-      document.getElementById('propH').value = m.h;
-      document.getElementById('propD').value = m.d;
-      document.getElementById('propX').value = m.x;
-      document.getElementById('propY').value = m.y;
-      document.getElementById('propCor').value = m.cor;
-      document.getElementById('propFrente').value = m.frente;
-      document.getElementById('propPuxador').value = m.puxador;
-      document.getElementById('propLED').checked = m.led;
-
-      atualizarArvoreUI();
-    }
-
-    function atualizarItem() {
-      if (selecaoIndex < 0) return;
-      const m = listaModulos[selecaoIndex];
-      m.w = parseFloat(document.getElementById('propW').value) || 80;
-      m.h = parseFloat(document.getElementById('propH').value) || 75;
-      m.d = parseFloat(document.getElementById('propD').value) || 50;
-      m.x = parseFloat(document.getElementById('propX').value) || 0;
-      m.y = parseFloat(document.getElementById('propY').value) || 0;
-      m.cor = document.getElementById('propCor').value;
-      m.frente = document.getElementById('propFrente').value;
-      m.puxador = document.getElementById('propPuxador').value;
-      m.led = document.getElementById('propLED').checked;
-
-      renderizarModulo(m);
-      calcularOrcamento();
-    }
-
-    function excluirItem() {
-      if (selecaoIndex < 0) return;
-      scene.remove(listaModulos[selecaoIndex].group);
-      listaModulos.splice(selecaoIndex, 1);
-      selecaoIndex = listaModulos.length - 1;
-      if (selecaoIndex >= 0) selecionarModulo(selecaoIndex);
-      atualizarArvoreUI();
-      calcularOrcamento();
-    }
-
-    function atualizarArvoreUI() {
-      const tree = document.getElementById('listaModulosTree');
-      tree.innerHTML = '';
-      listaModulos.forEach((m, i) => {
-        const btn = document.createElement('button');
-        btn.className = 'btn';
-        if (i === selecaoIndex) btn.style.borderColor = '#38bdf8';
-        btn.innerText = `#${i+1} ${m.tipo.toUpperCase()} (${m.w}cm)`;
-        btn.onclick = () => { selecionarModulo(i); if(window.innerWidth <= 768) mudarAbaMobile('props'); };
-        tree.appendChild(btn);
-      });
-    }
-
-    function toggleAbrirMoveis() {
-      estaAberto = !estaAberto;
-      listaModulos.forEach(m => {
-        m.partes.forEach(p => {
-          new TWEEN.Tween(p.obj.rotation).to({ y: estaAberto ? p.rot : 0 }, 700).start();
-        });
-      });
-    }
-
-    function toggleVisao2D() {
-      visao2D = !visao2D;
-      if (visao2D) {
-        camera.position.set(0, 600, 0);
-        controls.target.set(0, 0, 0);
-      } else {
-        camera.position.set(220, 180, 320);
-      }
-    }
-
-    function toggleCotas() { mostrarCotas = !mostrarCotas; }
-
-    function calcularOrcamento() {
-      let areaM2 = 0;
-      listaModulos.forEach(m => {
-        const w = m.w/100, h = m.h/100, d = m.d/100;
-        areaM2 += ((2*(h*d)) + (2*(w*d)) + (w*h)) * 1.2;
-      });
-
-      const valorTotal = (areaM2 * 140) + (listaModulos.length * 150);
-      document.getElementById('resM2').innerText = `${areaM2.toFixed(2)} m²`;
-      document.getElementById('resTotal').innerText = `R$ ${(valorTotal * 1.7).toFixed(2)}`;
-    }
-
-    function abrirCutlist() {
-      const tbody = document.querySelector('#tabelaCutlist tbody');
+    function atualizarTabelaPecas() {
+      const tbody = document.querySelector('#tabelaPecas tbody');
       tbody.innerHTML = '';
-      listaModulos.forEach((m, idx) => {
+      let totalQtd = 0;
+
+      listaPecas.forEach(p => {
+        totalQtd += p.qtd;
+        const fitasStr = `${p.fitas.top?'T':''}${p.fitas.bottom?'B':''}${p.fitas.left?'E':''}${p.fitas.right?'D':''}` || '-';
+        
         tbody.innerHTML += `
-          <tr><td>#${idx + 1} (${m.tipo})</td><td>Lateral</td><td>${m.h}</td><td>${m.d}</td><td>2</td></tr>
-          <tr><td>#${idx + 1} (${m.tipo})</td><td>Base/Tampo</td><td>${m.w - 3}</td><td>${m.d}</td><td>2</td></tr>
-          <tr><td>#${idx + 1} (${m.tipo})</td><td>Portas</td><td>${m.h - 0.4}</td><td>${(m.w - 0.6)/2}</td><td>2</td></tr>
+          <tr>
+            <td><strong>${p.nome}</strong></td>
+            <td>${p.w} x ${p.h} mm</td>
+            <td>${p.qtd}</td>
+            <td><span style="color:#facc15; font-weight:bold;">${fitasStr}</span></td>
+            <td><button class="btn btn-danger" onclick="removerPeca(${p.id})">✕</button></td>
+          </tr>
         `;
       });
-      document.getElementById('modalCutlist').style.display = 'flex';
+
+      document.getElementById('totalPecasCount').innerText = totalQtd;
     }
 
-    function fecharCutlist() { document.getElementById('modalCutlist').style.display = 'none'; }
-
-    async function salvarBD() {
-      try {
-        await fetch(`${API_URL}/api/orcamento`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cliente: "Projeto Mobile Promob", custo: 1000, markup: 70 })
-        });
-        alert('✅ Salvo com sucesso!');
-      } catch (e) {
-        alert('Salvo em modo local!');
+    // ALGORITMO OTIMIZADOR DE CORTE 2D (BIN PACKING / GUILLOTINE CUT)
+    function otimizarPlanoCorte() {
+      if (listaPecas.length === 0) {
+        alert('Cadastre pelo menos uma peça para otimizar!');
+        return;
       }
+
+      const chapaW = parseInt(document.getElementById('chapaW').value);
+      const chapaH = parseInt(document.getElementById('chapaH').value);
+      const kerf = parseInt(document.getElementById('kerf').value);
+      const refilo = parseInt(document.getElementById('refilo').value);
+
+      const usableW = chapaW - (refilo * 2);
+      const usableH = chapaH - (refilo * 2);
+
+      // Expandir peças conforme a quantidade
+      let pecasDesempacotadas = [];
+      listaPecas.forEach(p => {
+        for (let i = 0; i < p.qtd; i++) {
+          pecasDesempacotadas.push({ ...p, idx: i + 1 });
+        }
+      });
+
+      // Ordenar peças por área (Decreasing Area Fit)
+      pecasDesempacotadas.sort((a, b) => (b.w * b.h) - (a.w * a.h));
+
+      resultadoChapas = [];
+      let metrosFitaTotal = 0;
+
+      function criarNovaChapa() {
+        return {
+          id: resultadoChapas.length + 1,
+          espacosLIVRES: [{ x: refilo, y: refilo, w: usableW, h: usableH }],
+          pecasAlocadas: []
+        };
+      }
+
+      let chapaAtual = criarNovaChapa();
+      resultadoChapas.push(chapaAtual);
+
+      pecasDesempacotadas.forEach(peca => {
+        let alocado = false;
+
+        // Calcular metros de fita da peça
+        let fitaPeca = 0;
+        if (peca.fitas.top) fitaPeca += peca.w;
+        if (peca.fitas.bottom) fitaPeca += peca.w;
+        if (peca.fitas.left) fitaPeca += peca.h;
+        if (peca.fitas.right) fitaPeca += peca.h;
+        metrosFitaTotal += (fitaPeca / 1000);
+
+        for (let c = 0; c < resultadoChapas.length; c++) {
+          let chapa = resultadoChapas[c];
+
+          for (let i = 0; i < chapa.espacosLIVRES.length; i++) {
+            let espaco = chapa.espacosLIVRES[i];
+
+            // Tentar normal
+            let fitNormal = peca.w <= espaco.w && peca.h <= espaco.h;
+            // Tentar rotacionado
+            let fitGiro = peca.giro && (peca.h <= espaco.w && peca.w <= espaco.h);
+
+            if (fitNormal || fitGiro) {
+              let rotacionou = !fitNormal && fitGiro;
+              let pw = rotacionou ? peca.h : peca.w;
+              let ph = rotacionou ? peca.w : peca.h;
+
+              // Adicionar peça alocada
+              chapa.pecasAlocadas.push({
+                ...peca,
+                x: espaco.x,
+                y: espaco.y,
+                wRender: pw,
+                hRender: ph,
+                rotacionado: rotacionou
+              });
+
+              // Atualizar retalhos (Guillotine Split)
+              let sobraDireita = {
+                x: espaco.x + pw + kerf,
+                y: espaco.y,
+                w: espaco.w - pw - kerf,
+                h: ph
+              };
+
+              let sobraAbaixo = {
+                x: espaco.x,
+                y: espaco.y + ph + kerf,
+                w: espaco.w,
+                h: espaco.h - ph - kerf
+              };
+
+              chapa.espacosLIVRES.splice(i, 1);
+              if (sobraDireita.w > 50 && sobraDireita.h > 50) chapa.espacosLIVRES.push(sobraDireita);
+              if (sobraAbaixo.w > 50 && sobraAbaixo.h > 50) chapa.espacosLIVRES.push(sobraAbaixo);
+
+              alocado = true;
+              break;
+            }
+          }
+          if (alocado) break;
+        }
+
+        // Se não coube em nenhuma chapa, abre nova chapa
+        if (!alocado) {
+          let novaChapa = criarNovaChapa();
+          let espaco = novaChapa.espacosLIVRES[0];
+          
+          let rotacionou = peca.giro && (peca.h <= espaco.w && peca.w <= espaco.h) && !(peca.w <= espaco.w && peca.h <= espaco.h);
+          let pw = rotacionou ? peca.h : peca.w;
+          let ph = rotacionou ? peca.w : peca.h;
+
+          novaChapa.pecasAlocadas.push({
+            ...peca,
+            x: espaco.x,
+            y: espaco.y,
+            wRender: pw,
+            hRender: ph,
+            rotacionado: rotacionou
+          });
+
+          novaChapa.espacosLIVRES.shift();
+          if (espaco.w - pw - kerf > 50) novaChapa.espacosLIVRES.push({ x: espaco.x + pw + kerf, y: espaco.y, w: espaco.w - pw - kerf, h: ph });
+          if (espaco.h - ph - kerf > 50) novaChapa.espacosLIVRES.push({ x: espaco.x, y: espaco.y + ph + kerf, w: espaco.w, h: espaco.h - ph - kerf });
+
+          resultadoChapas.push(novaChapa);
+        }
+      });
+
+      // Atualizar Estatísticas
+      const areaChapa = chapaW * chapaH;
+      let areaUsadaTotal = 0;
+      resultadoChapas.forEach(c => {
+        c.pecasAlocadas.forEach(p => { areaUsadaTotal += (p.w * p.h); });
+      });
+
+      const areaTotalChapas = areaChapa * resultadoChapas.length;
+      const %aprov = (areaUsadaTotal / areaTotalChapas) * 100;
+
+      document.getElementById('statChapas').innerText = resultadoChapas.length;
+      document.getElementById('statAprov').innerText = `${%aprov.toFixed(1)}%`;
+      document.getElementById('statSobra').innerText = `${(100 - %aprov).toFixed(1)}%`;
+      document.getElementById('statFita').innerText = `${metrosFitaTotal.toFixed(1)} m`;
+
+      chapaAtualIndex = 0;
+      renderizarChapa();
     }
 
-    window.onload = init3D;
+    // DESENHAR PLANO DE CORTE NO CANVAS 2D
+    function renderizarChapa() {
+      if (resultadoChapas.length === 0) return;
+
+      const canvas = document.getElementById('canvasCorte');
+      const ctx = canvas.getContext('2d');
+      const chapa = resultadoChapas[chapaAtualIndex];
+
+      const chapaW = parseInt(document.getElementById('chapaW').value);
+      const chapaH = parseInt(document.getElementById('chapaH').value);
+
+      document.getElementById('sheetTitle').innerText = `Plano de Corte - Chapa ${chapaAtualIndex + 1} de ${resultadoChapas.length}`;
+
+      // Fator de Escala para caber no Canvas
+      const scale = Math.min(canvas.width / chapaW, canvas.height / chapaH);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Desenhar Chapa Base
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(0, 0, chapaW * scale, chapaH * scale);
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(0, 0, chapaW * scale, chapaH * scale);
+
+      // Desenhar Peças Alocadas
+      chapa.pecasAlocadas.forEach(p => {
+        const px = p.x * scale;
+        const py = p.y * scale;
+        const pw = p.wRender * scale;
+        const ph = p.hRender * scale;
+
+        // Corpo da Peça MDF
+        ctx.fillStyle = '#0284c7';
+        ctx.fillRect(px, py, pw, ph);
+
+        // Borda Interna
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(px, py, pw, ph);
+
+        // Desenhar Fita de Bordo (Linhas Vermelhas Destacadas)
+        ctx.strokeStyle = '#ef4444';
+        ctx.lineWidth = 3;
+
+        const f = p.fitas;
+        if ((!p.rotacionado && f.top) || (p.rotacionado && f.left)) { ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + pw, py); ctx.stroke(); }
+        if ((!p.rotacionado && f.bottom) || (p.rotacionado && f.right)) { ctx.beginPath(); ctx.moveTo(px, py + ph); ctx.lineTo(px + pw, py + ph); ctx.stroke(); }
+        if ((!p.rotacionado && f.left) || (p.rotacionado && f.top)) { ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px, py + ph); ctx.stroke(); }
+        if ((!p.rotacionado && f.right) || (p.rotacionado && f.bottom)) { ctx.beginPath(); ctx.moveTo(px + pw, py); ctx.lineTo(px + pw, py + ph); ctx.stroke(); }
+
+        // Texto com Nome e Medidas
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillText(`${p.nome}`, px + 6, py + 14);
+        ctx.font = '9px sans-serif';
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillText(`${p.w}x${p.h} mm ${p.rotacionado ? '🔄' : ''}`, px + 6, py + 26);
+      });
+    }
+
+    function mudarChapa(dir) {
+      if (resultadoChapas.length === 0) return;
+      chapaAtualIndex += dir;
+      if (chapaAtualIndex < 0) chapaAtualIndex = 0;
+      if (chapaAtualIndex >= resultadoChapas.length) chapaAtualIndex = resultadoChapas.length - 1;
+      renderizarChapa();
+    }
   </script>
 </body>
-</html>
+          </html>
+          
